@@ -183,54 +183,25 @@ class Metatype(Node):
         """
         return nodetypes_published(self.nodetypes)
 
-
-
     @property
     def get_nbh(self):
         """  
         Returns the neighbourhood of the metatype
         """
-        fields = ['title','altname','plural']
         nbh = {}
         nbh['title'] = self.title
         nbh['altnames'] = self.altnames 
         nbh['plural'] = self.plural
-
-        nbh['typeof'] = {}
         if self.parent:
-            nbh['typeof'] = dict({str(self.parent.id) : str(self.parent.title)})
-
-        nbh['contains_subtypes'] = {}
+            nbh['typeof'] = self.parent
         # generate ids and names of children/members
-        for obj in self.children.get_query_set():
-            nbh['contains_subtypes'].update({str(obj.id):str(obj.title)})
-
-        nbh['contains_members'] = {}
-        for obj in self.nodetypes.all():
-            nbh['contains_members'].update({str(obj.id):str(obj.title)})
-
-        nbh['relations'] = {}
-        left_relset = Relationtype.objects.filter(subjecttypeLeft=self.id)
-        right_relset = Relationtype.objects.filter(subjecttypeRight=self.id)
-
-        nbh['relations']['leftroles']  ={}
-        nbh['relations']['rightroles'] ={}
-
-        for relationtype in left_relset:
-            nbh['relations']['leftroles'].update({str(relationtype.id):str(relationtype.title)})
-
-        for relationtype in right_relset:
-            nbh['relations']['rightroles'].update({str(relationtype.id):str(relationtype.title)})
-
-        nbh['attributetypes'] = {}
-        for attributetype in Attributetype.objects.filter(subjecttype=self.id):
-             nbh['attributetypes'].update({str(attributetype._attributeType_cache.title):[attributetype.id ,str(attributetype.valueScope) + str(attributetype.value)]})
-
-        node = {}
-        node[self.title] = nbh
-
-        return node
-
+        nbh['contains_subtypes'] = self.children.get_query_set()
+        nbh['contains_members'] = self.nodetypes.all()
+        nbh['left_role_of'] = Relationtype.objects.filter(subjecttypeLeft=self.id)
+        nbh['right_role_of'] = Relationtype.objects.filter(subjecttypeRight=self.id)
+        nbh['attributetypes'] = Attributetype.objects.filter(subjecttype=self.id)
+        
+        return nbh
                   
     @property
     def tree_path(self):
@@ -341,76 +312,6 @@ class Nodetype(Node):
 
     objects = models.Manager()
     published = NodetypePublishedManager()
-
-
-    @property
-    def get_nbh(self):
-        """          
-        Returns the neighbourhood of the nodetype
-        """
-
-        nbh = {}
-        nbh['title'] = self.title
-        nbh['altnames'] = self.altnames
-        nbh['plural'] = self.plural        
-        nbh['member_of_metatype'] = {}
-        if self.metatypes.all():
-            for metatype in self.metatypes.all():    
-		nbh['member_of_metatype'].update({str(metatype.id):str(metatype.title)})      
-
-        nbh['attributetypes'] = {}
-
-        for attributetype in Attributetype.objects.filter(subjecttype=self.id):
-             nbh['attributetypes'].update({str(attributetype.id):str(attributetype.title)})
-
-        left_relset = Relationtype.objects.filter(subjecttypeLeft=self.id)
-        right_relset = Relationtype.objects.filter(subjecttypeRight=self.id)
-        nbh['relations'] = {}
-        reltypes = {}
-	reltypes['right_role_of'] = {}
-	reltypes['left_role_of'] = {}
-
-        for relationtype in left_relset:
-	    reltypes['left_role_of'].update({str(relationtype.id):str(relationtype.title)})
-
-        for relationtype in right_relset:
-	    reltypes['right_role_of'].update({str(relationtype.id):str(relationtype.title)})
-
-        nbh['type_of'] = {}
-	if self.parent:
-            nbh['type_of'].update({str(self.parent.id) : str(self.parent.title)})
-
-        nbh['contains_subtypes'] = {}
-        #generate ids and names of children /members
-        for nodetype in Nodetype.objects.filter(parent=self.id):
-            nbh['contains_subtypes'].update({str(nodetype.id):str(nodetype.title)})
-
-        nbh['contains_members'] = {}
-
-        if self.gbobjects.all():
-            for gbobject in self.gbobjects.all():   
-		nbh['contains_members'].update({str(gbobject.id):str(gbobject.title)})
-                
-        nbh['priornodes'] = {} 
-        if self.priornodes.all():            
-            for prnode in self.priornodes.all():
-                nbh['priornodes'].update({str(prnode.id):str(prnode.title)})
-
-        nbh['posteriornodes'] = {} 
-        if self.posteriornodes.all():            
-            for pstnode in self.posteriornodes.all():
-                nbh['postnodes'].update({str(pstnode.id):str(pstnode.title)})
-
-	nbh['authors'] = {}
-        for author in self.authors.all():
-            nbh['authors'].update({str(author.id):str(author.username)})
-        nbh['content']  = self.content
-
-        node = {}
-        node[self.title] = nbh
-
-	return node
-
 
     @property
     def tree_path(self):
@@ -573,6 +474,122 @@ class Objecttype(Nodetype):
 
     def __unicode__(self):
         return self.title
+
+    @property
+    def get_attributetypes(self):
+        attr_types = {}
+        attr_types['attributetypes'] = {}
+
+        for attributetype in self.subjecttype_GbnodeType.all():   
+            # or also Attributetype.objects.filter(subjecttype=self.id):
+            attr_types['attributetypes'].update({str(attributetype.id):str(attributetype.title)})
+        return attr_types
+
+    @property
+    def get_relationtypes(self):
+        reltypes = {}
+	reltypes['right_role_of'] = {}
+	reltypes['left_role_of'] = {}
+
+        left_relset = self.subjecttypeLeft_gbnodetype.all()  
+        right_relset = self.subjecttypeRight_gbnodetype.all() 
+
+        for relationtype in left_relset:
+	    reltypes['left_role_of'].update({str(relationtype.id):str(relationtype.title)})
+
+        for relationtype in right_relset:
+	    reltypes['right_role_of'].update({str(relationtype.id):str(relationtype.title)})
+        return reltypes
+
+    @property
+    def get_leftroles(self):
+        """
+        for which relation types does this object become a domain of any relation type
+        """
+        reltypes = []
+        left_relset = self.subjecttypeLeft_gbnodetype.all()  
+        for relationtype in left_relset:
+	    reltypes.append(relationtype)
+        return reltypes
+
+    @property
+    def get_rightroles(self):
+        """
+        for which relation types does this object become a domain of any relation type
+        """
+        reltypes = []
+        right_relset = self.subjecttypeRight_gbnodetype.all()  
+        for relationtype in right_relset:
+	    reltypes.append(relationtype)
+        return reltypes
+
+    @property
+    def get_subjecttypes(self):
+        """
+        for which relation types does this object become a domain of any relation type
+        """
+        subjecttypes = []
+        attrset = self.subjecttype_GbnodeType.all()  
+        for subjecttype in attrset:
+	    subjecttypes.append(subjecttype)
+        return subjecttypes
+        
+
+    @property
+    def member_of_metatypes(self):
+        """
+        returns if the objecttype is a member of the membership in a metatype class
+        """
+        types = []
+        if self.metatypes.all():
+            for metatype in self.metatypes.all():    
+		types.append(metatype.title)
+        return types
+
+
+    @property
+    def get_members(self):
+        """
+        get members of the object type
+        """
+        members = []
+        if self.gbobjects.all():
+            for gbobject in self.gbobjects.all():   
+		members.append(gbobject)
+        return members    
+
+    @property
+    def get_nbh(self):
+        """          
+        Returns the neighbourhood of the nodetype
+        """
+        nbh = {}
+        nbh['title'] = self.title
+        nbh['altnames'] = self.altnames
+        nbh['plural'] = self.plural        
+        nbh['member_of_metatype'] = self.metatypes.all()
+        # get all the ATs for the objecttype
+        nbh.update(self.get_attributetypes) 
+
+        # get all the RTs for the objecttype        
+        nbh.update(self.get_relationtypes) 
+
+        nbh['type_of'] = self.parent
+
+        nbh['contains_subtypes'] = Nodetype.objects.filter(parent=self.id)
+        # get all the objects inheriting this OT 
+        nbh['contains_members'] = self.gbobjects.all()
+
+        nbh['priornodes'] = self.priornodes.all()             
+
+        nbh['posteriornodes'] = self.posteriornodes.all() 
+
+	nbh['authors'] = self.authors.all()
+
+	return nbh
+
+
+
 
     class Meta:
         """
@@ -809,7 +826,7 @@ class Attribute(Edge):
         return 'the %s of %s is %s' % (self.attributeType, self.subject, self.svalue)
 
 
-class AttributeCharfield(Attribute):    
+class AttributeCharField(Attribute):    
 
     charfield  = models.CharField(max_length=100, verbose_name='string') 
 
@@ -823,116 +840,116 @@ class AttributeTextField(Attribute):
     def __unicode__(self):
         return self.title
     
-class IntegerField(Attribute):
+class AttributeIntegerField(Attribute):
      integerfield = models.IntegerField(max_length=100, verbose_name='Integer') 
 
      def __unicode__(self):
          return self.title
 
-class CommaSeparatedIntegerField(Attribute):
+class AttributeCommaSeparatedIntegerField(Attribute):
     
     commaseparatedintegerfield  = models.CommaSeparatedIntegerField(max_length=100, verbose_name='integers separated by comma') 
 
     def __unicode__(self):
         return self.title
 
-class GbBigIntegerField(Attribute):
+class AttributeBigIntegerField(Attribute):
     
     bigintegerfield  = models.BigIntegerField(max_length=100, verbose_name='big integer') 
 
     def __unicode__(self):
         return self.title
 
-class PositiveIntegerField(Attribute):
+class AttributePositiveIntegerField(Attribute):
     
     positiveintegerfield  = models.PositiveIntegerField(max_length=100, verbose_name='positive integer') 
 
     def __unicode__(self):
         return self.title
 
-class DecimalField(Attribute):
+class AttributeDecimalField(Attribute):
     
     decimalfield  = models.DecimalField(max_digits=3, decimal_places=2, verbose_name='decimal') 
 
     def __unicode__(self):
         return self.title
 
-class FloatField(Attribute):
+class AttributeFloatField(Attribute):
     
     floatfield  = models.FloatField(max_length=100, verbose_name='number as float') 
 
     def __unicode__(self):
         return self.title
 
-class BooleanField(Attribute):
+class AttributeBooleanField(Attribute):
     
     booleanfield  = models.BooleanField(verbose_name='boolean') 
 
     def __unicode__(self):
         return self.title
 
-class NullBooleanField(Attribute):
+class AttributeNullBooleanField(Attribute):
     nullbooleanfield  = models.NullBooleanField(verbose_name='true false or unknown') 
 
     def __unicode__(self):
         return self.title
 
-class DateField(Attribute):
+class AttributeDateField(Attribute):
     
     datefield  = models.DateField(max_length=100, verbose_name='date') 
 
     def __unicode__(self):
         return self.title
 
-class DateTimeField(Attribute):
+class AttributeDateTimeField(Attribute):
     
     DateTimeField  = models.DateTimeField(max_length=100, verbose_name='date time') 
     
     def __unicode__(self):
         return self.title
     
-class TimeField(Attribute):
+class AttributeTimeField(Attribute):
     TimeField  = models.TimeField(max_length=100, verbose_name='time') 
 
     def __unicode__(self):
         return self.title
 
-class EmailField(Attribute):
+class AttributeEmailField(Attribute):
     
     charfield  = models.CharField(max_length=100,verbose_name='value') 
 
     def __unicode__(self):
         return self.title
 
-class FileField(Attribute):
+class AttributeFileField(Attribute):
     
     filefield  = models.FileField(upload_to='/media', verbose_name='file') 
 
     def __unicode__(self):
         return self.title
 
-class FilePathField(Attribute):
+class AttributeFilePathField(Attribute):
     
     filepathfield  = models.FilePathField(verbose_name='path of file') 
 
     def __unicode__(self):
         return self.title
 
-class ImageField(Attribute):
+class AttributeImageField(Attribute):
     
     imagefield  = models.ImageField(upload_to='/media', verbose_name='image') 
 
     def __unicode__(self):
         return self.title
 
-class URLField(Attribute):
+class AttributeURLField(Attribute):
 
     urlfield  = models.URLField(max_length=100, verbose_name='url') 
 
     def __unicode__(self):
         return self.title
 
-class IPAddressField(Attribute):
+class AttributeIPAddressField(Attribute):
 
     ipaddressfield  = models.IPAddressField(max_length=100, verbose_name='ip address') 
 
