@@ -147,6 +147,56 @@ class Gbobject(Node):
     published = GbobjectPublishedManager()
 
 
+    def get_relations(self):
+        relation_set = {}
+        # ALGO to find the relations and their leftroles and rightroles
+        # 1. Get the relations containing a reference to the object. Retrieve where it occurs (left or right)
+        # 2. Find out which RT they come from.
+        # 3. For each RT, create a dict key and a value as a dict. And add the relation as a new key-value pair (rid:subject).
+        # 4. If self is in right value, then add inverse relation as RT and add the relation as a new key-value pair (rid:subject).
+
+        left_relset = Relation.objects.filter(subject1=self.id) 
+        right_relset = Relation.objects.filter(subject2=self.id) 
+        
+        #return left_relset + right_relset
+
+        # RT dictionary to store a single relation
+        rel_dict ={}
+        rel_dict['leftroles'] = {}
+        rel_dict['rightroles'] ={}
+
+               
+        for relation in left_relset:
+            # check if relation already exists
+            if relation.relationtype.title not in rel_dict['leftroles'].keys():
+                # create a new list field and add to it
+                rel_dict['leftroles'][str(relation.relationtype.title)] = []
+            # add 
+            rel_dict['leftroles'][str(relation.relationtype.title)].append(relation) 
+
+        for relation in right_relset:
+            # check if relation exists
+            if relation.relationtype.inverse not in rel_dict['rightroles'].keys():
+                # create a new list key field and add to it
+                rel_dict['rightroles'][str(relation.relationtype.inverse)] = []
+                # add to the existing key
+            rel_dict['rightroles'][str(relation.relationtype.inverse)].append(relation)
+
+        relation_set.update(rel_dict['leftroles'])
+        relation_set.update(rel_dict['rightroles'])
+        
+        return relation_set
+        
+
+    def get_attributes(self):
+        attributes =  {}
+        for attribute in self.subject_gbnode.all(): #Attribute.objects.filter(subject=self.id):
+            for key,value in attribute.edge_node_dict.iteritems():
+                attributes[key]= value
+                
+        return attributes
+            
+
     @property
     def get_nbh(self):
         """ 
@@ -158,62 +208,34 @@ class Gbobject(Node):
         nbh['altnames'] = self.altnames                
         nbh['plural'] = self.plural
         nbh['content'] = self.content
-
-        nbh['member_of'] = {}
-        for objtype in self.objecttypes.all():
-            # create member of dict
-            nbh['member_of'].update({str(objtype.id):str(objtype.title)})
-
-        # ALGO to find the relations and their leftroles and rightroles
-        # 1. Get the relations containing a reference to the object. Retrieve where it occurs (left or right)
-        # 2. Find out which RT they come from.
-        # 3. For each RT, create a dict key and a value as a dict. And add the relation as a new key-value pair (rid:subject).
-        # 4. If self is in right value, then add inverse relation as RT and add the relation as a new key-value pair (rid:subject).
-
-        left_relset = Relation.objects.filter(subject1=self.id) 
-        right_relset = Relation.objects.filter(subject2=self.id) 
-                
-        # RT dictionary to store a single relation
-        rel_dict ={}
-        rel_dict['leftroles'] = {}
-        rel_dict['rightroles'] ={}
-
-               
-        for relation in left_relset:
-            # check if relation in possibles
-            if relation.relationtype.title not in rel_dict['leftroles'].keys():
-                # create a new dict key field and add to it
-                rel_dict['leftroles'][str(relation.relationtype.title)] = {}
-            # add 
-            rel_dict['leftroles'][str(relation.relationtype.title)][str(relation.id)] = str(relation.subject2) 
-
-    
-        for relation in right_relset:
-            # check if relation in possibles
-            if relation.relationtype.inverse not in rel_dict['rightroles'].keys():
-                # create a new dict key field and add to it
-                rel_dict['rightroles'][str(relation.relationtype.inverse)] = {}
-                # add to the existing key
-            rel_dict['rightroles'][str(relation.relationtype.inverse)][str(relation.id)] = str(relation.subject1)
-
-        nbh['relations'] = {}  #rel_dict    
-        #nbh['leftroles'] = rel_dict['leftroles']
-        #nbh['rightroles'] = rel_dict['rightroles']
-        nbh['relations'].update(rel_dict['leftroles'])
-        nbh['relations'].update(rel_dict['rightroles'])
-        #nbh['relations'].update(rel_dict['rightroles'])
+        #return  all OTs the object is linked to
+        nbh['member_of'] = self.objecttypes.all()
         
-        attributes =  {}
-        for attribute in Attribute.objects.filter(subject=self.id):
-            for key,value in attribute.edge_node_dict.iteritems():
-                attributes[key]= value
-        nbh['attributes'] = attributes
+        # get all the relations of the object    
+        nbh.update(self.get_relations())
+        nbh.update(self.get_attributes())
         # encapsulate the dictionary with its node name as key
-        #nbh.update(attribute_set)
-        node = {}
-        node[self.title] = nbh
-        
-        return node
+        return nbh
+
+
+    @property
+    def get_rendered_nbh(self):
+        """ 
+        Returns the neighbourhood of the object
+        """
+        fields = ['title','altname','pluralform']
+        nbh = {}
+        nbh['title'] = self.title        
+        nbh['altnames'] = self.altnames                
+        nbh['plural'] = self.plural
+        nbh['content'] = self.content
+        #return  all OTs the object is linked to
+        member_of_list = []
+        for each in self.objecttypes.all():
+            member_of_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title)) 
+        nbh['member_of'] = member_of_list
+
+        return nbh
 
 
 
