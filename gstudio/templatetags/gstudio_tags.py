@@ -296,6 +296,12 @@ def get_gravatar(email, size=80, rating='g', default=None):
     url = '%s?%s' % (url, urlencode(options))
     return url.replace('&', '&amp;')
 
+@register.simple_tag
+def get_type(name):
+
+    """Return the type of node"""
+    return get_node(name)
+
 
 class TagsNode(Node):
     def __init__(self, context_var):
