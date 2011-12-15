@@ -34,6 +34,7 @@ from gstudio.moderator import NodetypeCommentModerator
 from gstudio.url_shortener import get_url_shortener
 from gstudio.signals import ping_directories_handler
 from gstudio.signals import ping_external_urls_handler
+
 import reversion
 from reversion.models import Version
 from django.core import serializers
@@ -728,41 +729,37 @@ class Relation(Edge):
     objectScope = models.CharField(max_length=50, verbose_name='object scope or qualification', null=True, blank=True)
     subject2 = models.ForeignKey(NID, related_name="subject2_gbnode", verbose_name='object name') 
 
-    def ApplicableNodeTypes_filter():
-        choice = 'NT'
+    def ApplicableNodeTypes_filter(self,choice):
+
+        nodeslist = []
+        
         if choice == 'ED':
-            nid = 'Edge'
+            nodeslist = Edge.objects.all()
         if choice == 'ND':
-            nid = 'Node' 
+            nodeslist = Node.objects.all()
         if choice == 'NT':
-            nid = 'Nodetype'
+            nodeslist = Nodetype.objects.all()
         if choice == 'ET':
-            nid = 'Edgetype'
+            nodeslist = Edgetype.objects.all()
         if choice == 'OT':
-            nid = 'Objecttype'
+            nodeslist = Objecttype.objects.all()
         if choice == 'RT':
-            nid = 'Relationtype'
+            nodeslist = Relationtype.objects.all()
         if choice == 'MT':
-            nid = 'Metatype'
+            nodeslist = Metatype.objects.all()
         if choice == 'AT':
-            nid = 'Attributetype'
+            nodeslist = Attributetype.objects.all()
         if choice == 'RN':
-            nid = 'Relation'
+            nodeslist = Relation.objects.all()
         if choice == 'AS':
-            nid = 'Attributes'
+            nodeslist = Attribute.objects.all()
         if choice == 'ST':
-            nid = 'Systemtype'
+            nodeslist = Systemtype.objects.all()
         if choice == 'SY':
-            nid = 'System'
-
-        node = NID.objects.get(Objecttype)
-        vrs = Version.objects.filter(type=0 , object_id=node.id) 
-        vrs =  vrs[0]
-        AppNode = vrs.object._meta.module_name
-        AppNodeList = AppNode.objects.all()
-        return AppNodeList
-
-
+            nodeslist = System.objects.all()
+        
+        return nodeslist
+        
 
     class Meta:
         unique_together = (('subject1Scope', 'subject1', 'relationTypeScope', 'relationtype', 'objectScope', 'subject2'),)
