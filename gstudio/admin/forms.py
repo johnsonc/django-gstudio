@@ -6,6 +6,7 @@ from django.contrib.sites.models import Site
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 
+from gstudio.models import NID
 from gstudio.models import Nodetype
 from gstudio.models import Objecttype
 from gstudio.models import Metatype
@@ -50,7 +51,7 @@ from gstudio.models import Processtype
 from gstudio.admin.widgets import TreeNodeChoiceField
 from gstudio.admin.widgets import MPTTFilteredSelectMultiple
 from gstudio.admin.widgets import MPTTModelMultipleChoiceField
-
+from reversion.models import Version
         
 class MetatypeAdminForm(forms.ModelForm):
     """Form for Metatype's Admin"""
@@ -102,6 +103,7 @@ class ObjecttypeAdminForm(forms.ModelForm):
         queryset=Nodetype.objects.all(),
         widget=MPTTFilteredSelectMultiple(_('nodetypes'), False,
                                           attrs={'rows': '10'}))
+
 
 
 
@@ -168,6 +170,55 @@ class RelationtypeAdminForm(forms.ModelForm):
 
 
 class RelationAdminForm(forms.ModelForm):
+
+
+    def ApplicableNodeTypes_filter(self):
+        choice = 'NT'
+        if choice == 'ED':
+            nid = 'Edge'
+        if choice == 'ND':
+            nid = 'Node' 
+        if choice == 'NT':
+            nid = 'Nodetype'
+        if choice == 'ET':
+            nid = 'Edgetype'
+        if choice == 'OT':
+            nid = 'Objecttype'
+        if choice == 'RT':
+            nid = 'Relationtype'
+        if choice == 'MT':
+            nid = 'Metatype'
+        if choice == 'AT':
+            nid = 'Attributetype'
+        if choice == 'RN':
+            nid = 'Relation'
+        if choice == 'AS':
+            nid = 'Attributes'
+        if choice == 'ST':
+            nid = 'Systemtype'
+        if choice == 'SY':
+            nid = 'System'
+
+        node = NID.objects.get(Objecttype)
+        vrs = Version.objects.filter(type=0 , object_id=node.id) 
+        vrs =  vrs[0]
+        AppNode = vrs.object._meta.module_name
+        AppNodeList = AppNode.objects.all()
+        return AppNodeList
+
+
+
+
+        
+        
+
+        
+
+    
+
+
+
+        
 
     class Meta:
         """MetatypeAdminForm's Meta"""
@@ -252,6 +303,19 @@ class AttributetypeAdminForm(forms.ModelForm):
 
 
 class AttributeAdminForm(forms.ModelForm):
+    attr = Attributetype.objects.get(title='population')
+    def subject_filter(attr):
+        """
+        returns applicable selection of nodes for selecting objects
+        """
+        for each in Objecttype.objects.all():
+            if attr.subjecttype.id == each.id:
+                return each.get_members
+
+    def __init__(self, *args, **kwargs):
+        super(AttributeAdminForm, self).__init__(*args, **kwargs)
+        self.fields["subject"].queryset = subject_filter(attr)
+        
 
     class Meta:
         """MetatypeAdminForm's Meta"""

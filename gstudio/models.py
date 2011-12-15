@@ -34,6 +34,7 @@ from gstudio.moderator import NodetypeCommentModerator
 from gstudio.url_shortener import get_url_shortener
 from gstudio.signals import ping_directories_handler
 from gstudio.signals import ping_external_urls_handler
+
 import reversion
 from reversion.models import Version
 from django.core import serializers
@@ -728,6 +729,37 @@ class Relation(Edge):
     objectScope = models.CharField(max_length=50, verbose_name='object scope or qualification', null=True, blank=True)
     subject2 = models.ForeignKey(NID, related_name="subject2_gbnode", verbose_name='object name') 
 
+    def ApplicableNodeTypes_filter(self,choice):
+
+        nodeslist = []
+        
+        if choice == 'ED':
+            nodeslist = Edge.objects.all()
+        if choice == 'ND':
+            nodeslist = Node.objects.all()
+        if choice == 'NT':
+            nodeslist = Nodetype.objects.all()
+        if choice == 'ET':
+            nodeslist = Edgetype.objects.all()
+        if choice == 'OT':
+            nodeslist = Objecttype.objects.all()
+        if choice == 'RT':
+            nodeslist = Relationtype.objects.all()
+        if choice == 'MT':
+            nodeslist = Metatype.objects.all()
+        if choice == 'AT':
+            nodeslist = Attributetype.objects.all()
+        if choice == 'RN':
+            nodeslist = Relation.objects.all()
+        if choice == 'AS':
+            nodeslist = Attribute.objects.all()
+        if choice == 'ST':
+            nodeslist = Systemtype.objects.all()
+        if choice == 'SY':
+            nodeslist = System.objects.all()
+        
+        return nodeslist
+        
 
     class Meta:
         unique_together = (('subject1Scope', 'subject1', 'relationTypeScope', 'relationtype', 'objectScope', 'subject2'),)
@@ -780,6 +812,7 @@ class Attribute(Edge):
     attributeType = models.ForeignKey(Attributetype, verbose_name='property name')
     valueScope = models.CharField(max_length=50, verbose_name='value scope or qualification', null=True, blank=True)
     svalue  = models.CharField(max_length=100, verbose_name='serialized value') 
+    
 
     
     class Meta:
@@ -825,8 +858,17 @@ class Attribute(Edge):
         composes a name to the attribute
         '''
         return 'the %s of %s is %s' % (self.attributeType, self.subject, self.svalue)
-
-
+    
+    def subject_filter(self,attr):
+        """
+        returns applicable selection of nodes for selecting objects
+        """
+        for each in Objecttype.objects.all():
+            if attr.subjecttype.id == each.id:
+                return each.get_members
+                    
+            
+        
 class AttributeCharField(Attribute):    
 
     value  = models.CharField(max_length=100, verbose_name='string') 

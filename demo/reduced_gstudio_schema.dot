@@ -2169,6 +2169,37 @@ digraph name {
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
+<<<<<<< HEAD
+        ><FONT FACE="Helvetica Bold">lft</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">PositiveIntegerField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">rght</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">PositiveIntegerField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">tree_id</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">PositiveIntegerField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">level</FONT
+        ></TD>
+        <TD ALIGN="LEFT"
+        ><FONT FACE="Helvetica Bold">PositiveIntegerField</FONT
+        ></TD></TR>
+        
+        <TR><TD ALIGN="LEFT" BORDER="0"
+        ><FONT FACE="Helvetica Bold">nodetype_ptr</FONT
+=======
         ><FONT FACE="Helvetica Bold">nodetype_ptr</FONT
         ></TD>
         <TD ALIGN="LEFT"
@@ -2177,6 +2208,7 @@ digraph name {
         
         <TR><TD ALIGN="LEFT" BORDER="0"
         ><FONT FACE="Helvetica Bold">edgetype_ptr</FONT
+>>>>>>> gnowgi/master
         ></TD>
         <TD ALIGN="LEFT"
         ><FONT FACE="Helvetica Bold">OneToOneField</FONT
@@ -2330,6 +2362,8 @@ digraph name {
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
+<<<<<<< HEAD
+=======
         ><FONT FACE="Helvetica Bold">rght</FONT
         ></TD>
         <TD ALIGN="LEFT"
@@ -2351,6 +2385,7 @@ digraph name {
         ></TD></TR>
         
         <TR><TD ALIGN="LEFT" BORDER="0"
+>>>>>>> gnowgi/master
         ><FONT COLOR="#7B7B7B" FACE="Helvetica Bold">priornodes</FONT
         ></TD>
         <TD ALIGN="LEFT"
@@ -3513,7 +3548,10 @@ digraph name {
 	Attributetype -> Metatype	 [arrowhead=normal,
 		arrowtail=normal,
 		label=metatypes];
+<<<<<<< HEAD
+=======
 	Attributetype -> gbEdgetype	 [label=edgetype_ptr];
+>>>>>>> gnowgi/master
 	Attributetype -> gbNodetype	 [label=parent];
 	Attributetype -> User	 [arrowhead=normal,
 		arrowtail=normal,
