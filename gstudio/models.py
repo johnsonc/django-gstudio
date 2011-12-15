@@ -728,6 +728,41 @@ class Relation(Edge):
     objectScope = models.CharField(max_length=50, verbose_name='object scope or qualification', null=True, blank=True)
     subject2 = models.ForeignKey(NID, related_name="subject2_gbnode", verbose_name='object name') 
 
+    def ApplicableNodeTypes_filter():
+        choice = 'NT'
+        if choice == 'ED':
+            nid = 'Edge'
+        if choice == 'ND':
+            nid = 'Node' 
+        if choice == 'NT':
+            nid = 'Nodetype'
+        if choice == 'ET':
+            nid = 'Edgetype'
+        if choice == 'OT':
+            nid = 'Objecttype'
+        if choice == 'RT':
+            nid = 'Relationtype'
+        if choice == 'MT':
+            nid = 'Metatype'
+        if choice == 'AT':
+            nid = 'Attributetype'
+        if choice == 'RN':
+            nid = 'Relation'
+        if choice == 'AS':
+            nid = 'Attributes'
+        if choice == 'ST':
+            nid = 'Systemtype'
+        if choice == 'SY':
+            nid = 'System'
+
+        node = NID.objects.get(Objecttype)
+        vrs = Version.objects.filter(type=0 , object_id=node.id) 
+        vrs =  vrs[0]
+        AppNode = vrs.object._meta.module_name
+        AppNodeList = AppNode.objects.all()
+        return AppNodeList
+
+
 
     class Meta:
         unique_together = (('subject1Scope', 'subject1', 'relationTypeScope', 'relationtype', 'objectScope', 'subject2'),)
@@ -780,6 +815,7 @@ class Attribute(Edge):
     attributeType = models.ForeignKey(Attributetype, verbose_name='property name')
     valueScope = models.CharField(max_length=50, verbose_name='value scope or qualification', null=True, blank=True)
     svalue  = models.CharField(max_length=100, verbose_name='serialized value') 
+    
 
     
     class Meta:
@@ -813,8 +849,17 @@ class Attribute(Edge):
         composes a name to the attribute
         '''
         return 'the %s of %s is %s' % (self.attributeType, self.subject, self.svalue)
-
-
+    
+    def subject_filter(self,attr):
+        """
+        returns applicable selection of nodes for selecting objects
+        """
+        for each in Objecttype.objects.all():
+            if attr.subjecttype.id == each.id:
+                return each.get_members
+                    
+            
+        
 class AttributeCharField(Attribute):    
 
     value  = models.CharField(max_length=100, verbose_name='string') 
