@@ -826,6 +826,18 @@ class Attribute(Edge):
                        ('can_change_author', 'Can change author'), )
 
 
+    def subject_filter(self,attr):
+        """
+        returns applicaable selection of nodes for selecting as subject
+        """
+        subjecttype = attr.subjecttype
+
+        for each in Objecttype.objects.all():
+            if attr.subjecttype.id == each.id:
+                return each.get_members
+        
+
+
     def __unicode__(self):
         return self.composed_attribution
 
