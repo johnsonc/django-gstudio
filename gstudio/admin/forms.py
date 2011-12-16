@@ -303,7 +303,7 @@ class AttributetypeAdminForm(forms.ModelForm):
 
 
 class AttributeAdminForm(forms.ModelForm):
-    attr = Attributetype.objects.get(title='population')
+
     def subject_filter(attr):
         """
         returns applicable selection of nodes for selecting objects

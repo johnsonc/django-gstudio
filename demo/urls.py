@@ -21,6 +21,7 @@ urlpatterns = patterns(
     (r'^$', 'django.views.generic.simple.redirect_to',
      {'url': '/gstudio/'}),
     url(r'^gstudio/', include('gstudio.urls')),
+    url(r'^objects/', include('objectapp.urls')),
     url(r'^gstudio/objects/', include('objectapp.urls')),
     url(r'^comments/', include('django.contrib.comments.urls')),
     url(r'^xmlrpc/$', 'django_xmlrpc.views.handle_xmlrpc'),

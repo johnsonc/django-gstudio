@@ -112,6 +112,7 @@ class Author(User):
         """Author's Meta"""
         proxy = True
 
+
 class NID(models.Model):
     """the set of all nodes.  provides node ID (NID) to all nodes in
     the network, including edges.  Edges are also first class citizens
@@ -203,6 +204,31 @@ class Metatype(Node):
         nbh['attributetypes'] = Attributetype.objects.filter(subjecttype=self.id)
         
         return nbh
+
+
+    @property
+    def get_rendered_nbh(self):
+        """
+        Returns the neighbourhood of the metatype
+        """
+        nbh = {}
+        nbh['title'] = self.title
+        nbh['altnames'] = self.altnames
+        nbh['plural'] = self.plural
+        if self.parent:
+            nbh['typeof'] = self.parent
+        # generate ids and names of children/members
+            nbh['contains_subtypes'] = self.children.get_query_set()
+        contains_members_list = []
+        for each in self.nodetypes.all():
+            contains_members_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['contains_members'] = contains_members_list
+        nbh['left_role_of'] = Relationtype.objects.filter(subjecttypeLeft=self.id)
+        nbh['right_role_of'] = Relationtype.objects.filter(subjecttypeRight=self.id)
+        nbh['attributetypes'] = Attributetype.objects.filter(subjecttype=self.id)
+
+        return nbh
+
 
                   
     @property
@@ -579,6 +605,51 @@ class Objecttype(Nodetype):
 	return nbh
 
 
+    @property
+    def get_rendered_nbh(self):
+        """
+        Returns the neighbourhood of the nodetype with the hyperlinks of nodes rendered
+        """
+        nbh = {}
+        nbh['title'] = self.title
+        nbh['altnames'] = self.altnames
+        nbh['plural'] = self.plural
+        member_of_metatypes_list = []
+        for each in self.metatypes.all():
+            member_of_metatypes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['member_of_metatypes'] = member_of_metatypes_list
+
+        nbh.update(self.get_attributetypes)
+
+        # get all the RTs for the objecttype
+        nbh.update(self.get_relationtypes)
+
+        nbh['type_of'] = self.parent
+
+        nbh['contains_subtypes'] = Nodetype.objects.filter(parent=self.id)
+        # get all the objects inheriting this OT
+        contains_members_list = []
+        for each in self.gbobjects.all():
+            contains_members_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['contains_members'] = contains_members_list
+       
+        priornodes_list = []
+        for each in self.priornodes.all():
+            priornodes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['priornodes'] = priornodes_list
+        
+        posteriornodes_list = []
+        for each in self.posteriornodes.all():
+            posteriornodes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['posteriornodes'] = posteriornodes_list
+        
+        author_list = []
+        for each in self.authors.all():
+            author_list.append('<a href="%s"></a>' % (each.get_absolute_url()))
+        nbh['authors'] = author_list
+        return nbh
+
+
 
 
     class Meta:
@@ -602,7 +673,7 @@ class Edgetype(Nodetype):
         abstract=False
 
 
-class Relationtype(Edgetype):
+class Relationtype(Nodetype):
     '''
     Binary Relationtypes are defined in this table.
     '''
