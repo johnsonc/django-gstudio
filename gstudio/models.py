@@ -125,6 +125,22 @@ class NID(models.Model):
         """
         return self.__dict__
 
+    @property
+    def ref(self):
+        """ 
+        Returns the object reference the id belongs to.
+        """
+        try:
+            """                                                                                                                                                         ALGO:     get object id, go to version model, return for the given id.                                                                                      """
+            # Retrieving only the relevant tupleset for the versioned objects
+            vrs = Version.objects.filter(type=0 , object_id=self.id)
+            # Returned value is a list, so splice it.                                                                                                     
+            vrs =  vrs[0]            
+        except Error:
+            return None
+        
+        return vrs.object
+
     def get_serialized_data(self):
         """
         return the fields in a serialized form of the current object.
@@ -133,6 +149,11 @@ class NID(models.Model):
         from reversion.models import Version
         version = Version.objects.get(id=self.id)
         return version.serialized_data
+
+    @property
+    def get_edit_url(self):
+        return "/admin/" + self._meta.app_label + "/" + self._meta.module_name + "/" + str(self.id)
+   
 
     def __unicode__(self):
         return self.title
