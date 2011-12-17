@@ -14,7 +14,6 @@ gstudio/__init__.py
 gstudio/comparison.py
 gstudio/context_processors.py
 gstudio/feeds.py
-gstudio/genform.py
 gstudio/gnowql.py
 gstudio/managers.py
 gstudio/models.py
@@ -326,6 +325,8 @@ gstudio/templates/admin/gstudio/nodetype/autocomplete_tags.js
 gstudio/templates/admin/gstudio/nodetype/markitup.js
 gstudio/templates/admin/gstudio/nodetype/tinymce_textareas.js
 gstudio/templates/admin/gstudio/nodetype/wymeditor.js
+gstudio/templates/admin/gstudio/widgets/ATquickpost.html
+gstudio/templates/admin/gstudio/widgets/OTquickpost.html
 gstudio/templates/admin/gstudio/widgets/_content_stats.html
 gstudio/templates/admin/gstudio/widgets/_draft_nodetypes.html
 gstudio/templates/admin/gstudio/widgets/_recent_comments.html
@@ -352,7 +353,6 @@ gstudio/templates/feeds/pingback_description.html
 gstudio/templates/feeds/pingback_title.html
 gstudio/templates/feeds/trackback_description.html
 gstudio/templates/feeds/trackback_title.html
-gstudio/templates/grappelli/admin/header.html
 gstudio/templates/gstudio/_header.html
 gstudio/templates/gstudio/_nodetype_detail.html
 gstudio/templates/gstudio/_nodetype_neighbourhood.html

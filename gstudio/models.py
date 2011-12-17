@@ -40,8 +40,8 @@ from reversion.models import Version
 from django.core import serializers
 
 NODETYPE_CHOICES = (
-    ('ED', 'Edges'),
     ('ND', 'Nodes'),
+    ('ED', 'Edges'),
     ('NT', 'Node types'),
     ('ET', 'Edge types'),
     ('OT', 'Object types'),
@@ -52,6 +52,12 @@ NODETYPE_CHOICES = (
     ('AS', 'Attributes'),
     ('ST', 'System type'),
     ('SY', 'System'),
+    ('NS', 'Node specification'),
+    ('AS', 'Attribute specification'),
+    ('RS', 'Relation specification'),
+    ('IN', 'Intersection'),
+    ('CP', 'Complement'),
+    ('UN', 'Union'),
    )
 
 DEPTYPE_CHOICES = (
@@ -328,6 +334,7 @@ class Nodetype(Node):
     authors = models.ManyToManyField(User, verbose_name=_('authors'),
                                      related_name='nodetypes',
                                      blank=True, null=False)
+
     status = models.IntegerField(choices=STATUS_CHOICES, default=PUBLISHED)
 
     featured = models.BooleanField(_('featured'), default=False)
@@ -686,29 +693,20 @@ class Objecttype(Nodetype):
 
 
 
-class Edgetype(Nodetype):
-
-    def __unicode__(self):
-        return self.title
-
-    class Meta:
-        abstract=False
-
-
 class Relationtype(Nodetype):
     '''
     Binary Relationtypes are defined in this table.
     '''
     inverse = models.CharField(_('inverse name'), help_text=_('when subjecttypes are interchanged, what should be the name of the relation type? This is mandatory field. If the relation is symmetric, same name will do.'), max_length=255,db_index=True ) 
     left_subjecttype = models.ForeignKey(NID,related_name="left_subjecttype_of", verbose_name='left role')  
-    applicablenodetypes1 = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='Node types for left role')
-    cardinalityLeft = models.IntegerField(null=True, blank=True, verbose_name='cardinality for the left role')
+    left_applicable_nodetypes = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='Node types for left role')
+    left_cardinality = models.IntegerField(null=True, blank=True, verbose_name='cardinality for the left role')
     right_subjecttype = models.ForeignKey(NID,related_name="right_subjecttype_of", verbose_name='right role')  
-    applicablenodetypes2 = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='Node types for right role')
-    cardinalityRight = models.IntegerField(null=True, blank=True, verbose_name='cardinality for the right role')
-    isSymmetrical = models.NullBooleanField(verbose_name='Is symmetrical?')
-    isReflexive = models.NullBooleanField(verbose_name='Is reflexive?')
-    isTransitive = models.NullBooleanField(verbose_name='Is transitive?')
+    right_applicable_nodetypes = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='Node types for right role')
+    right_cardinality = models.IntegerField(null=True, blank=True, verbose_name='cardinality for the right role')
+    is_symmetrical = models.NullBooleanField(verbose_name='Is symmetrical?')
+    is_reflexive = models.NullBooleanField(verbose_name='Is reflexive?')
+    is_transitive = models.NullBooleanField(verbose_name='Is transitive?')
 
 
     def get_serialized_data(self):
@@ -741,7 +739,7 @@ class Attributetype(Nodetype):
     field is selected for datatype. 
     '''
     subjecttype = models.ForeignKey(NID, related_name="subjecttype_of", verbose_name='subject type name')  
-    applicablenodetypes = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='applicable nodetypes') 
+    applicable_nodetypes = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='applicable nodetypes') 
     dataType = models.CharField(max_length=2, choices=FIELD_TYPE_CHOICES,default='01', verbose_name='data type of value') 
  
     verbose_name = models.CharField(max_length=500, null=True, blank=True, verbose_name='verbosename', help_text='verbose name')
@@ -764,37 +762,6 @@ class Attributetype(Nodetype):
     editable=models.NullBooleanField(verbose_name='required', null=True, blank=True, help_text='If False, the field will not be editable')
     
 
-    def simpleform(self):
-        """ create the form elements """
-        simpleform = {}
-        simpleform['projectName'] = self.subjecttype
-        simpleform['ID'] = self.subjecttype
-        simpleform['formName'] = self.title
-        simpleform['formRef'] = self.title
-        return simpleform
-
-    def simpleform_xml(self):
-        """
-        this function will move to the managaers module with functions
-        like gstudio2epicollect and epicollect2gstudio. this is a
-        simple example to suggest a usecase to create dynamic forms.
-        """
-
-        dictionary = self.simpleform()
-        return '<xform>  <model>  <submission id="learning-epicollect" projectName="learning-epicollect" allowDownloadEdits="false" versionNumber="2.1"/>  <uploadToServer>http://test.mlst.net/epicollectplus/school2/upload</uploadToServer>  <downloadFromServer>http://test.mlst.net/epicollectplus/school2/download</downloadFromServer>  </model> <form num="1" name=" %s  " key=" %s " main="true"> ' % (dictionary['projectName'], dictionary['projectName'])  
-
-    def inputform_xml(self):
-
-        """
-        this function will move to the managaers module with functions
-        like gstudio2epicollect and epicollect2gstudio. this is a
-        simple example to suggest a usecase to create dynamic forms.
-        """
-
-        return '<input ref="%s" title="true">  <label>what is the %s? </label>  </input>' % (self.title, self.title) 
-
-
-
     def __unicode__(self):
         return self.title
 
@@ -811,15 +778,14 @@ class Attributetype(Nodetype):
     
 class Relation(Edge):
     '''
-    other defined relations. subject1 and subject2 can be any of the
-    nodetypes except relations for now.
+    Relations, instances of relationtypes
     '''
 
-    subject1Scope = models.CharField(max_length=50, verbose_name='subject scope or qualification', null=True, blank=True)
+    left_subject_scope = models.CharField(max_length=50, verbose_name='subject scope or qualification', null=True, blank=True)
     left_subject = models.ForeignKey(NID, related_name="left_subject_of", verbose_name='subject name') 
-    relationTypeScope = models.CharField(max_length=50, verbose_name='relation scope or qualification', null=True, blank=True)
+    relationtype_scope = models.CharField(max_length=50, verbose_name='relation scope or qualification', null=True, blank=True)
     relationtype = models.ForeignKey(Relationtype, verbose_name='relation name')
-    objectScope = models.CharField(max_length=50, verbose_name='object scope or qualification', null=True, blank=True)
+    right_subject_scope = models.CharField(max_length=50, verbose_name='object scope or qualification', null=True, blank=True)
     right_subject = models.ForeignKey(NID, related_name="right_subject_of", verbose_name='object name') 
 
     def ApplicableNodeTypes_filter(self,choice):
@@ -832,8 +798,6 @@ class Relation(Edge):
             nodeslist = Node.objects.all()
         if choice == 'NT':
             nodeslist = Nodetype.objects.all()
-        if choice == 'ET':
-            nodeslist = Edgetype.objects.all()
         if choice == 'OT':
             nodeslist = Objecttype.objects.all()
         if choice == 'RT':
@@ -855,7 +819,7 @@ class Relation(Edge):
         
 
     class Meta:
-        unique_together = (('subject1Scope','left_subject','relationTypeScope', 'relationtype', 'objectScope','right_subject'),)
+        unique_together = (('left_subject_scope','left_subject','relationtype_scope', 'relationtype', 'right_subject_scope','right_subject'),)
         verbose_name = _('relation')
         verbose_name_plural = _('relations')
         permissions = (('can_view_all', 'Can view all'),
@@ -899,17 +863,17 @@ class Attribute(Edge):
     nodetypes. 
     '''
 
-    subjectScope = models.CharField(max_length=50, verbose_name='subject scope or qualification', null=True, blank=True)
+    subject_scope = models.CharField(max_length=50, verbose_name='subject scope or qualification', null=True, blank=True)
     subject = models.ForeignKey(NID, related_name="subject_of", verbose_name='subject name') 
-    attributeTypeScope = models.CharField(max_length=50, verbose_name='property scope or qualification', null=True, blank=True)
-    attributeType = models.ForeignKey(Attributetype, verbose_name='property name')
-    valueScope = models.CharField(max_length=50, verbose_name='value scope or qualification', null=True, blank=True)
+    attributetype_scope = models.CharField(max_length=50, verbose_name='property scope or qualification', null=True, blank=True)
+    attributetype = models.ForeignKey(Attributetype, verbose_name='property name')
+    value_scope = models.CharField(max_length=50, verbose_name='value scope or qualification', null=True, blank=True)
     svalue  = models.CharField(max_length=100, verbose_name='serialized value') 
     
 
     
     class Meta:
-        unique_together = (('subjectScope', 'subject', 'attributeTypeScope', 'attributeType', 'valueScope', 'svalue'),)
+        unique_together = (('subject_scope', 'subject', 'attributetype_scope', 'attributetype', 'value_scope', 'svalue'),)
         verbose_name = _('attribute')
         verbose_name_plural = _('attributes')
         permissions = (('can_view_all', 'Can view all'),
@@ -1256,7 +1220,6 @@ class Intersection(Node):
 reversion.register(NID)
 reversion.register(Node)
 reversion.register(Objecttype)
-reversion.register(Edgetype)
 reversion.register(Edge)
 
 if not reversion.is_registered(Systemtype):

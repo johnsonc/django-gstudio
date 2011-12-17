@@ -27,7 +27,7 @@ class GbobjectAdmin(reversion.VersionAdmin):
     date_hierarchy = 'creation_date'
     fieldsets = ((_('Content'), {'fields': ('title', 'altnames', 'objecttypes','content',
                                             'image', 'status')}),
-                 (_('Dependency'), {'fields': ('priornodes', 'posteriornodes',),
+                 (_('Dependency'), {'fields': ('prior_nodes', 'posterior_nodes',),
                                  'classes': ('collapse', 'collapse-closed')}),
 
                  (_('Options'), {'fields': ('featured', 'excerpt', 'template',

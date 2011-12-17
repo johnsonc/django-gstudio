@@ -35,21 +35,21 @@ class RelationtypeAdmin(reversion.VersionAdmin):
                         'parent',
                         'slug',
                         
-                        'subjecttypeLeft',
-                        'applicablenodetypes1',
-                        'cardinalityLeft',
-                        'subjecttypeRight',
-                        'applicablenodetypes2',
-                        'cardinalityRight',
-                        'isSymmetrical',
-                        'isReflexive',
-                        'isTransitive') 
+                        'left_subjecttype',
+                        'left_applicable_nodetypes',
+                        'left_cardinality',
+                        'right_subjecttype',
+                        'right_applicable_nodetypes',
+                        'right_cardinality',
+                        'is_symmetrical',
+                        'is_reflexive',
+                        'is_transitive') 
                                             }),
             (_('Content'), {'fields': ('content', 'image',), 
                             'classes': ('collapse', 'collapse-closed')}),
             
             
-            (_('Dependency'), {'fields': ('priornodes', 'posteriornodes',), 
+            (_('Dependency'), {'fields': ('prior_nodes', 'posterior_nodes',), 
                                'classes': ('collapse', 'collapse-closed')}),
             (_('Options'), {'fields': ('featured', 'excerpt', 'template',
                                        'authors',
