@@ -27,7 +27,7 @@ SITE_ID = 1
 
 LANGUAGE_CODE = 'en'
 
-GRAPPELLI_ADMIN_TITLE = "Gnowledge Studio"
+GRAPPELLI_ADMIN_TITLE = '<a href="/">Gnowledge Studio</a>'
 
 GRAPPELLI_INDEX_DASHBOARD = "demo.dashboard.CustomIndexDashboard"
 
@@ -91,14 +91,14 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.sites',
-    'gstudio',
-    'objectapp',
     'mptt',
     'reversion',
     'tagging',
     'django_xmlrpc',
     'grappelli.dashboard',
     'grappelli',
+    'gstudio',
+    'objectapp',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.staticfiles',
