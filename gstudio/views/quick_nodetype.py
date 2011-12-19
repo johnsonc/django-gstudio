@@ -42,6 +42,9 @@ def view_quick_nodetype(request):
             return redirect(nodetype)
 
         data = {'title': smart_str(request.POST.get('title', '')),
+                'altnames': smart_str(request.POST.get('altnames', '')),
+                'plural': smart_str(request.POST.get('plural', '')),
+                'parent': smart_str(request.POST.get('parent', '')),
                 'content': smart_str(linebreaks(request.POST.get(
                     'content', ''))),
                 'tags': smart_str(request.POST.get('tags', '')),

@@ -106,6 +106,7 @@ INSTALLED_APPS = (
     'registration',
     'graphviz',
     'demo',
+    'south',
     )
 
 from gstudio.xmlrpc import GSTUDIO_XMLRPC_METHODS
