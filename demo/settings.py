@@ -107,6 +107,7 @@ INSTALLED_APPS = (
     'graphviz',
     'demo',
     'ajax_select',
+    'south',
     )
 
 AJAX_LOOKUP_CHANNELS = {
