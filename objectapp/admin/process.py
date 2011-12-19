@@ -42,7 +42,7 @@ class ProcessAdmin(reversion.VersionAdmin):
 
 
 
-                 (_('Dependency'), {'fields': ('priornodes', 'posteriornodes',),
+                 (_('Dependency'), {'fields': ('prior_nodes', 'posterior_nodes',),
                                  'classes': ('collapse', 'collapse-closed')}),
                  (_('Options'), {'fields': ('featured', 'excerpt', 'template',
                                             'authors',

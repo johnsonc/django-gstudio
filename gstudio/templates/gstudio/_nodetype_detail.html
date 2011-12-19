@@ -4,12 +4,13 @@
     <h3 class="nodetype-title">
       <a href="{{ object.get_absolute_url }}" title="{{ object.title }}" rel="bookmark">
         {{ object.title }}
-
-      </a>
+	 </a>
+	<a href="{{ object.ref.get_edit_url }}" target="_blank" >[edit]</a>     
 
     </h3>
 
     <p class="nodetype-info">
+	
 
       {% if object.authors.count %}
       {% trans "Contributed by" %}
