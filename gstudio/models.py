@@ -34,13 +34,14 @@ from gstudio.moderator import NodetypeCommentModerator
 from gstudio.url_shortener import get_url_shortener
 from gstudio.signals import ping_directories_handler
 from gstudio.signals import ping_external_urls_handler
+
 import reversion
 from reversion.models import Version
 from django.core import serializers
 
 NODETYPE_CHOICES = (
-    ('ED', 'Edges'),
     ('ND', 'Nodes'),
+    ('ED', 'Edges'),
     ('NT', 'Node types'),
     ('ET', 'Edge types'),
     ('OT', 'Object types'),
@@ -51,6 +52,12 @@ NODETYPE_CHOICES = (
     ('AS', 'Attributes'),
     ('ST', 'System type'),
     ('SY', 'System'),
+    ('NS', 'Node specification'),
+    ('AS', 'Attribute specification'),
+    ('RS', 'Relation specification'),
+    ('IN', 'Intersection'),
+    ('CP', 'Complement'),
+    ('UN', 'Union'),
    )
 
 DEPTYPE_CHOICES = (
@@ -124,6 +131,29 @@ class NID(models.Model):
         """
         return self.__dict__
 
+
+    @property
+    def ref(self):
+        """ 
+        Returns the object reference the id belongs to.
+        """
+        try:
+            """                                                                                                                                                         ALGO:     get object id, go to version model, return for the given id.                                                                                      """
+            # Retrieving only the relevant tupleset for the versioned objects
+            vrs = Version.objects.filter(type=0 , object_id=self.id)
+            # Returned value is a list, so splice it.                                                                                                     
+            vrs =  vrs[0]            
+        except Error:
+            return None
+        
+        return vrs.object
+
+    @property
+    def get_edit_url(self):
+        return "/admin/" + self._meta.app_label + "/" + self._meta.module_name + "/" + str(self.id)
+   
+
+
     def get_serialized_data(self):
         """
         return the fields in a serialized form of the current object.
@@ -181,8 +211,7 @@ class Metatype(Node):
         """
         Return only the published nodetypes 
         """
-        return nodetypes_published(self.nodetypes)
-
+        return nodetypes_published(self.member_types)
 
     @property
     def get_nbh(self):
@@ -198,12 +227,11 @@ class Metatype(Node):
         # generate ids and names of children/members
         nbh['contains_subtypes'] = self.children.get_query_set()
         nbh['contains_members'] = self.nodetypes.all()
-        nbh['left_role_of'] = Relationtype.objects.filter(subjecttypeLeft=self.id)
-        nbh['right_role_of'] = Relationtype.objects.filter(subjecttypeRight=self.id)
+        nbh['left_subjecttype_of'] = Relationtype.objects.filter(left_subjecttype=self.id)
+        nbh['right_subjecttype_of'] = Relationtype.objects.filter(right_subjecttype=self.id)
         nbh['attributetypes'] = Attributetype.objects.filter(subjecttype=self.id)
         
         return nbh
-
 
 
     @property
@@ -291,6 +319,29 @@ class Metatype(Node):
                      
         return attrs
 
+    @property
+    def get_rendered_nbh(self):
+        """
+        Returns the neighbourhood of the metatype
+        """
+        nbh = {}
+        nbh['title'] = self.title
+        nbh['altnames'] = self.altnames
+        nbh['plural'] = self.plural
+        if self.parent:
+            nbh['typeof'] = self.parent
+        # generate ids and names of children
+            nbh['contains_subtypes'] = self.children.get_query_set()
+        contains_members_list = []
+        for each in self.nodetypes.all():
+            contains_members_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['contains_members'] = contains_members_list
+        nbh['left_subjecttype_of'] = Relationtype.objects.filter(left_subjecttype=self.id)
+        nbh['right_subjecttype_of'] = Relationtype.objects.filter(right_subjecttype=self.id)
+        nbh['attributetypes'] = Attributetype.objects.filter(subjecttype=self.id)
+
+        return nbh
+
                   
     @property
     def tree_path(self):
@@ -340,13 +391,14 @@ class Nodetype(Node):
     content = models.TextField(_('content'), null=True, blank=True)
     parent = models.ForeignKey('self', null=True, blank=True,
                                verbose_name=_('is a kind of'),
-                               related_name='subtypes')
-    priornodes = models.ManyToManyField('self', null=True, blank=True,
+                               related_name='children')
+
+    prior_nodes = models.ManyToManyField('self', null=True, blank=True,
                                verbose_name=_('its meaning depends on '),
-                               related_name='posteriors')
-    posteriornodes = models.ManyToManyField('self', null=True, blank=True,
+                               related_name='posterior_nodes')
+    posterior_nodes = models.ManyToManyField('self', null=True, blank=True,
                                verbose_name=_('required for the meaning of '),
-                               related_name='priornodes')
+                               related_name='prior_nodes')
 
     image = models.ImageField(_('image'), upload_to=UPLOAD_TO,
                               blank=True, help_text=_('used for illustration'))
@@ -356,7 +408,7 @@ class Nodetype(Node):
 
     tags = TagField(_('tags'))
     metatypes = models.ManyToManyField(Metatype, verbose_name=_('member of metatypes'),
-                                        related_name='nodetypes',
+                                        related_name='member_types',
                                         blank=True, null=True)
 
     slug = models.SlugField(help_text=_('used for publication'),
@@ -366,6 +418,7 @@ class Nodetype(Node):
     authors = models.ManyToManyField(User, verbose_name=_('authors'),
                                      related_name='nodetypes',
                                      blank=True, null=False)
+
     status = models.IntegerField(choices=STATUS_CHOICES, default=PUBLISHED)
 
     featured = models.BooleanField(_('featured'), default=False)
@@ -686,26 +739,26 @@ class Objecttype(Nodetype):
 
     @property
     def get_attributetypes(self):        
-        return self.subjecttype_GbnodeType.all()
+        return self.subjecttype_of.all()
 
     @property
     def get_relationtypes(self):
         
-        left_relset = self.subjecttypeLeft_gbnodetype.all()  
-        right_relset = self.subjecttypeRight_gbnodetype.all() 
+        left_relset = self.left_subjecttype_of.all()  
+        right_relset = self.right_subjecttype_of.all() 
 
         reltypes = {}
-        reltypes['left_role_of']=left_relset
-        reltypes['right_role_of']=right_relset
+        reltypes['left_subjecttype_of']=left_relset
+        reltypes['right_subjecttype_of']=right_relset
         return reltypes
 
     @property
-    def get_leftroles(self):
+    def get_left_subjecttypes(self):
         """
         for which relation types does this object become a domain of any relation type
         """
         reltypes = []
-        left_relset = self.subjecttypeLeft_gbnodetype.all()  
+        left_relset = self.left_subjecttype_of.all()  
         for relationtype in left_relset:
 	    reltypes.append(relationtype)
         return reltypes
@@ -716,7 +769,7 @@ class Objecttype(Nodetype):
         for which relation types does this object become a domain of any relation type
         """
         reltypes = []
-        right_relset = self.subjecttypeRight_gbnodetype.all()  
+        right_relset = self.right_subjecttype_of.all()  
         for relationtype in right_relset:
 	    reltypes.append(relationtype)
         return reltypes
@@ -727,7 +780,7 @@ class Objecttype(Nodetype):
         for which relation types does this object become a domain of any relation type
         """
         subjecttypes = []
-        attrset = self.subjecttype_GbnodeType.all()  
+        attrset = self.subjecttype_of.all()  
         for subjecttype in attrset:
 	    subjecttypes.append(subjecttype)
         return subjecttypes
@@ -768,7 +821,6 @@ class Objecttype(Nodetype):
         nbh['member_of_metatype'] = self.metatypes.all()
         # get all the ATs for the objecttype
         nbh.update(self.get_attributetypes) 
-
         # get all the RTs for the objecttype        
         nbh.update(self.get_relationtypes) 
 
@@ -778,14 +830,58 @@ class Objecttype(Nodetype):
         # get all the objects inheriting this OT 
         nbh['contains_members'] = self.gbobjects.all()
 
-        nbh['priornodes'] = self.priornodes.all()             
+        nbh['prior_nodes'] = self.prior_nodes.all()             
 
-        nbh['posteriornodes'] = self.posteriornodes.all() 
+        nbh['posterior_nodes'] = self.posterior_nodes.all() 
 
 	nbh['authors'] = self.authors.all()
 
 	return nbh
 
+
+    @property
+    def get_rendered_nbh(self):
+        """
+        Returns the neighbourhood of the nodetype with the hyperlinks of nodes rendered
+        """
+        nbh = {}
+        nbh['title'] = self.title
+        nbh['altnames'] = self.altnames
+        nbh['plural'] = self.plural
+        member_of_metatypes_list = []
+        for each in self.metatypes.all():
+            member_of_metatypes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['member_of_metatypes'] = member_of_metatypes_list
+
+        nbh.update(self.get_attributetypes)
+
+        # get all the RTs for the objecttype
+        nbh.update(self.get_relationtypes)
+
+        nbh['type_of'] = self.parent
+
+        nbh['contains_subtypes'] = Nodetype.objects.filter(parent=self.id)
+        # get all the objects inheriting this OT
+        contains_members_list = []
+        for each in self.gbobjects.all():
+            contains_members_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['contains_members'] = contains_members_list
+       
+        prior_nodes_list = []
+        for each in self.prior_nodes.all():
+            prior_nodes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['prior_nodes'] = prior_nodes_list
+        
+        posterior_nodes_list = []
+        for each in self.posterior_nodes.all():
+            posterior_nodes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['posterior_nodes'] = posterior_nodes_list
+        
+        author_list = []
+        for each in self.authors.all():
+            author_list.append('<a href="%s"></a>' % (each.get_absolute_url()))
+        nbh['authors'] = author_list
+        return nbh
 
 
 
@@ -801,29 +897,20 @@ class Objecttype(Nodetype):
 
 
 
-class Edgetype(Nodetype):
-
-    def __unicode__(self):
-        return self.title
-
-    class Meta:
-        abstract=False
-
-
-class Relationtype(Edgetype):
+class Relationtype(Nodetype):
     '''
     Binary Relationtypes are defined in this table.
     '''
     inverse = models.CharField(_('inverse name'), help_text=_('when subjecttypes are interchanged, what should be the name of the relation type? This is mandatory field. If the relation is symmetric, same name will do.'), max_length=255,db_index=True ) 
-    subjecttypeLeft = models.ForeignKey(NID,related_name="subjecttypeLeft_gbnodetype", verbose_name='left role')  
-    applicablenodetypes1 = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='Node types for left role')
-    cardinalityLeft = models.IntegerField(null=True, blank=True, verbose_name='cardinality for the left role')
-    subjecttypeRight = models.ForeignKey(NID,related_name="subjecttypeRight_gbnodetype", verbose_name='right role')  
-    applicablenodetypes2 = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='Node types for right role')
-    cardinalityRight = models.IntegerField(null=True, blank=True, verbose_name='cardinality for the right role')
-    isSymmetrical = models.NullBooleanField(verbose_name='Is symmetrical?')
-    isReflexive = models.NullBooleanField(verbose_name='Is reflexive?')
-    isTransitive = models.NullBooleanField(verbose_name='Is transitive?')
+    left_subjecttype = models.ForeignKey(NID,related_name="left_subjecttype_of", verbose_name='left role')  
+    left_applicable_nodetypes = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='Node types for left role')
+    left_cardinality = models.IntegerField(null=True, blank=True, verbose_name='cardinality for the left role')
+    right_subjecttype = models.ForeignKey(NID,related_name="right_subjecttype_of", verbose_name='right role')  
+    right_applicable_nodetypes = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='Node types for right role')
+    right_cardinality = models.IntegerField(null=True, blank=True, verbose_name='cardinality for the right role')
+    is_symmetrical = models.NullBooleanField(verbose_name='Is symmetrical?')
+    is_reflexive = models.NullBooleanField(verbose_name='Is reflexive?')
+    is_transitive = models.NullBooleanField(verbose_name='Is transitive?')
 
 
     def get_serialized_data(self):
@@ -855,8 +942,8 @@ class Attributetype(Nodetype):
     The rest of the fields may be required depending on what type of
     field is selected for datatype. 
     '''
-    subjecttype = models.ForeignKey(NID, related_name="subjecttype_GbnodeType", verbose_name='subject type name')  
-    applicablenodetypes = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='applicable nodetypes') 
+    subjecttype = models.ForeignKey(NID, related_name="subjecttype_of", verbose_name='subject type name')  
+    applicable_nodetypes = models.CharField(max_length=2,choices=NODETYPE_CHOICES,default='OT', verbose_name='applicable nodetypes') 
     dataType = models.CharField(max_length=2, choices=FIELD_TYPE_CHOICES,default='01', verbose_name='data type of value') 
  
     verbose_name = models.CharField(max_length=500, null=True, blank=True, verbose_name='verbosename', help_text='verbose name')
@@ -879,37 +966,6 @@ class Attributetype(Nodetype):
     editable=models.NullBooleanField(verbose_name='required', null=True, blank=True, help_text='If False, the field will not be editable')
     
 
-    def simpleform(self):
-        """ create the form elements """
-        simpleform = {}
-        simpleform['projectName'] = self.subjecttype
-        simpleform['ID'] = self.subjecttype
-        simpleform['formName'] = self.title
-        simpleform['formRef'] = self.title
-        return simpleform
-
-    def simpleform_xml(self):
-        """
-        this function will move to the managaers module with functions
-        like gstudio2epicollect and epicollect2gstudio. this is a
-        simple example to suggest a usecase to create dynamic forms.
-        """
-
-        dictionary = self.simpleform()
-        return '<xform>  <model>  <submission id="learning-epicollect" projectName="learning-epicollect" allowDownloadEdits="false" versionNumber="2.1"/>  <uploadToServer>http://test.mlst.net/epicollectplus/school2/upload</uploadToServer>  <downloadFromServer>http://test.mlst.net/epicollectplus/school2/download</downloadFromServer>  </model> <form num="1" name=" %s  " key=" %s " main="true"> ' % (dictionary['projectName'], dictionary['projectName'])  
-
-    def inputform_xml(self):
-
-        """
-        this function will move to the managaers module with functions
-        like gstudio2epicollect and epicollect2gstudio. this is a
-        simple example to suggest a usecase to create dynamic forms.
-        """
-
-        return '<input ref="%s" title="true">  <label>what is the %s? </label>  </input>' % (self.title, self.title) 
-
-
-
     def __unicode__(self):
         return self.title
 
@@ -926,20 +982,48 @@ class Attributetype(Nodetype):
     
 class Relation(Edge):
     '''
-    other defined relations. subject1 and subject2 can be any of the
-    nodetypes except relations for now.
+    Relations, instances of relationtypes
     '''
 
-    subject1Scope = models.CharField(max_length=50, verbose_name='subject scope or qualification', null=True, blank=True)
-    subject1 = models.ForeignKey(NID, related_name="subject1_gbnode", verbose_name='subject name') 
-    relationTypeScope = models.CharField(max_length=50, verbose_name='relation scope or qualification', null=True, blank=True)
+    left_subject_scope = models.CharField(max_length=50, verbose_name='subject scope or qualification', null=True, blank=True)
+    left_subject = models.ForeignKey(NID, related_name="left_subject_of", verbose_name='subject name') 
+    relationtype_scope = models.CharField(max_length=50, verbose_name='relation scope or qualification', null=True, blank=True)
     relationtype = models.ForeignKey(Relationtype, verbose_name='relation name')
-    objectScope = models.CharField(max_length=50, verbose_name='object scope or qualification', null=True, blank=True)
-    subject2 = models.ForeignKey(NID, related_name="subject2_gbnode", verbose_name='object name') 
+    right_subject_scope = models.CharField(max_length=50, verbose_name='object scope or qualification', null=True, blank=True)
+    right_subject = models.ForeignKey(NID, related_name="right_subject_of", verbose_name='object name') 
 
+    def ApplicableNodeTypes_filter(self,choice):
+
+        nodeslist = []
+        
+        if choice == 'ED':
+            nodeslist = Edge.objects.all()
+        if choice == 'ND':
+            nodeslist = Node.objects.all()
+        if choice == 'NT':
+            nodeslist = Nodetype.objects.all()
+        if choice == 'OT':
+            nodeslist = Objecttype.objects.all()
+        if choice == 'RT':
+            nodeslist = Relationtype.objects.all()
+        if choice == 'MT':
+            nodeslist = Metatype.objects.all()
+        if choice == 'AT':
+            nodeslist = Attributetype.objects.all()
+        if choice == 'RN':
+            nodeslist = Relation.objects.all()
+        if choice == 'AS':
+            nodeslist = Attribute.objects.all()
+        if choice == 'ST':
+            nodeslist = Systemtype.objects.all()
+        if choice == 'SY':
+            nodeslist = System.objects.all()
+        
+        return nodeslist
+        
 
     class Meta:
-        unique_together = (('subject1Scope', 'subject1', 'relationTypeScope', 'relationtype', 'objectScope', 'subject2'),)
+        unique_together = (('left_subject_scope','left_subject','relationtype_scope', 'relationtype', 'right_subject_scope','right_subject'),)
         verbose_name = _('relation')
         verbose_name_plural = _('relations')
         permissions = (('can_view_all', 'Can view all'),
@@ -983,20 +1067,33 @@ class Attribute(Edge):
     nodetypes. 
     '''
 
-    subjectScope = models.CharField(max_length=50, verbose_name='subject scope or qualification', null=True, blank=True)
-    subject = models.ForeignKey(NID, related_name="subject_gbnode", verbose_name='subject name') 
-    attributeTypeScope = models.CharField(max_length=50, verbose_name='property scope or qualification', null=True, blank=True)
-    attributeType = models.ForeignKey(Attributetype, verbose_name='property name')
-    valueScope = models.CharField(max_length=50, verbose_name='value scope or qualification', null=True, blank=True)
+    subject_scope = models.CharField(max_length=50, verbose_name='subject scope or qualification', null=True, blank=True)
+    subject = models.ForeignKey(NID, related_name="subject_of", verbose_name='subject name') 
+    attributetype_scope = models.CharField(max_length=50, verbose_name='property scope or qualification', null=True, blank=True)
+    attributetype = models.ForeignKey(Attributetype, verbose_name='property name')
+    value_scope = models.CharField(max_length=50, verbose_name='value scope or qualification', null=True, blank=True)
     svalue  = models.CharField(max_length=100, verbose_name='serialized value') 
+    
 
     
     class Meta:
-        unique_together = (('subjectScope', 'subject', 'attributeTypeScope', 'attributeType', 'valueScope', 'svalue'),)
+        unique_together = (('subject_scope', 'subject', 'attributetype_scope', 'attributetype', 'value_scope', 'svalue'),)
         verbose_name = _('attribute')
         verbose_name_plural = _('attributes')
         permissions = (('can_view_all', 'Can view all'),
                        ('can_change_author', 'Can change author'), )
+
+
+    def subject_filter(self,attr):
+        """
+        returns applicaable selection of nodes for selecting as subject
+        """
+        subjecttype = attr.subjecttype
+
+        for each in Objecttype.objects.all():
+            if attr.subjecttype.id == each.id:
+                return each.get_members
+        
 
 
     def __unicode__(self):
@@ -1022,134 +1119,145 @@ class Attribute(Edge):
         composes a name to the attribute
         '''
         return 'the %s of %s is %s' % (self.attributeType, self.subject, self.svalue)
+    
+    def subject_filter(self,attr):
+        """
+        returns applicable selection of nodes for selecting objects
+        """
+        for each in Objecttype.objects.all():
+            if attr.subjecttype.id == each.id:
+                return each.get_members
+                    
+            
+        
+class AttributeCharField(Attribute):    
 
-
-class AttributeCharfield(Attribute):    
-
-    charfield  = models.CharField(max_length=100, verbose_name='string') 
+    value  = models.CharField(max_length=100, verbose_name='string') 
 
     def __unicode__(self):
         return self.title
 
 class AttributeTextField(Attribute):
     
-    textfield  = models.TextField(verbose_name='text') 
+    value  = models.TextField(verbose_name='text') 
 
     def __unicode__(self):
         return self.title
     
-class IntegerField(Attribute):
-     integerfield = models.IntegerField(max_length=100, verbose_name='Integer') 
+class AttributeIntegerField(Attribute):
+     value = models.IntegerField(max_length=100, verbose_name='Integer') 
 
      def __unicode__(self):
          return self.title
 
-class CommaSeparatedIntegerField(Attribute):
+class AttributeCommaSeparatedIntegerField(Attribute):
     
-    commaseparatedintegerfield  = models.CommaSeparatedIntegerField(max_length=100, verbose_name='integers separated by comma') 
+    value  = models.CommaSeparatedIntegerField(max_length=100, verbose_name='integers separated by comma') 
 
     def __unicode__(self):
         return self.title
 
-class BigIntegerField(Attribute):
+class AttributeBigIntegerField(Attribute):
     
-    bigintegerfield  = models.BigIntegerField(max_length=100, verbose_name='big integer') 
+    value  = models.BigIntegerField(max_length=100, verbose_name='big integer') 
 
     def __unicode__(self):
         return self.title
 
-class PositiveIntegerField(Attribute):
+class AttributePositiveIntegerField(Attribute):
     
-    positiveintegerfield  = models.PositiveIntegerField(max_length=100, verbose_name='positive integer') 
+    value  = models.PositiveIntegerField(max_length=100, verbose_name='positive integer') 
 
     def __unicode__(self):
         return self.title
 
-class DecimalField(Attribute):
+class AttributeDecimalField(Attribute):
     
-    decimalfield  = models.DecimalField(max_digits=3, decimal_places=2, verbose_name='decimal') 
+    value  = models.DecimalField(max_digits=3, decimal_places=2, verbose_name='decimal') 
 
     def __unicode__(self):
         return self.title
 
-class FloatField(Attribute):
+class AttributeFloatField(Attribute):
     
-    floatfield  = models.FloatField(max_length=100, verbose_name='number as float') 
+    value  = models.FloatField(max_length=100, verbose_name='number as float') 
 
     def __unicode__(self):
         return self.title
 
-class BooleanField(Attribute):
+class AttributeBooleanField(Attribute):
     
-    booleanfield  = models.BooleanField(verbose_name='boolean') 
+    value  = models.BooleanField(verbose_name='boolean') 
 
     def __unicode__(self):
         return self.title
 
-class NullBooleanField(Attribute):
-    nullbooleanfield  = models.NullBooleanField(verbose_name='true false or unknown') 
-
-    def __unicode__(self):
-        return self.title
-
-class DateField(Attribute):
+class AttributeNullBooleanField(Attribute):
     
-    datefield  = models.DateField(max_length=100, verbose_name='date') 
+    value  = models.NullBooleanField(verbose_name='true false or unknown') 
 
     def __unicode__(self):
         return self.title
 
-class DateTimeField(Attribute):
+class AttributeDateField(Attribute):
     
-    DateTimeField  = models.DateTimeField(max_length=100, verbose_name='date time') 
+    value  = models.DateField(max_length=100, verbose_name='date') 
+
+    def __unicode__(self):
+        return self.title
+
+class AttributeDateTimeField(Attribute):
+    
+    value  = models.DateTimeField(max_length=100, verbose_name='date time') 
     
     def __unicode__(self):
         return self.title
     
-class TimeField(Attribute):
-    TimeField  = models.TimeField(max_length=100, verbose_name='time') 
-
-    def __unicode__(self):
-        return self.title
-
-class EmailField(Attribute):
+class AttributeTimeField(Attribute):
     
-    charfield  = models.CharField(max_length=100,verbose_name='value') 
+    value  = models.TimeField(max_length=100, verbose_name='time') 
 
     def __unicode__(self):
         return self.title
 
-class FileField(Attribute):
+class AttributeEmailField(Attribute):
     
-    filefield  = models.FileField(upload_to='/media', verbose_name='file') 
+    value  = models.CharField(max_length=100,verbose_name='value') 
 
     def __unicode__(self):
         return self.title
 
-class FilePathField(Attribute):
+class AttributeFileField(Attribute):
     
-    filepathfield  = models.FilePathField(verbose_name='path of file') 
+    value  = models.FileField(upload_to='/media', verbose_name='file') 
 
     def __unicode__(self):
         return self.title
 
-class ImageField(Attribute):
+class AttributeFilePathField(Attribute):
     
-    imagefield  = models.ImageField(upload_to='/media', verbose_name='image') 
+    value  = models.FilePathField(verbose_name='path of file') 
 
     def __unicode__(self):
         return self.title
 
-class URLField(Attribute):
-
-    urlfield  = models.URLField(max_length=100, verbose_name='url') 
+class AttributeImageField(Attribute):
+    
+    value  = models.ImageField(upload_to='/media', verbose_name='image') 
 
     def __unicode__(self):
         return self.title
 
-class IPAddressField(Attribute):
+class AttributeURLField(Attribute):
 
-    ipaddressfield  = models.IPAddressField(max_length=100, verbose_name='ip address') 
+    value  = models.URLField(max_length=100, verbose_name='url') 
+
+    def __unicode__(self):
+        return self.title
+
+class AttributeIPAddressField(Attribute):
+
+    value  = models.IPAddressField(max_length=100, verbose_name='ip address') 
 
     def __unicode__(self):
         return self.title
@@ -1161,12 +1269,12 @@ class Processtype(Nodetype):
     A kind of nodetype for defining processes or events or temporal
     objects involving change.  
     """
-    attributetype_set = models.ManyToManyField(Attributetype, null=True, blank=True,
+    changing_attributetype_set = models.ManyToManyField(Attributetype, null=True, blank=True,
                                verbose_name=_('attribute set involved in the process'),
-                               related_name='processtype_attributetypeset')
-    relationtype_set = models.ManyToManyField(Relationtype, null=True, blank=True,
+                               related_name=' changing_attributetype_set_of')
+    changing_relationtype_set = models.ManyToManyField(Relationtype, null=True, blank=True,
                                verbose_name=_('relation set involved in the process'),
-                               related_name='processtype_relationtypeset')
+                               related_name='changing_relationtype_set_of')
 
 
     def __unicode__(self):
@@ -1188,15 +1296,15 @@ class Systemtype(Nodetype):
     """
 
 
-    nodetype_set = models.ManyToManyField(Nodetype, related_name="nodetypeset_systemtype", verbose_name='Possible edges in the system',    
+    nodetype_set = models.ManyToManyField(Nodetype, related_name="nodetype_set_of", verbose_name='Possible edges in the system',    
                                            blank=True, null=False) 
-    relationtype_set = models.ManyToManyField(Relationtype, related_name="relationtypeset_systemtype", verbose_name='Possible nodetypes in the system',    
+    relationtype_set = models.ManyToManyField(Relationtype, related_name="relationtype_set_of", verbose_name='Possible nodetypes in the system',    
                                              blank=True, null=False) 
-    attributetype_set = models.ManyToManyField(Attributetype, related_name="attributetypeset_systemtype", verbose_name='systems to be nested in the system',
+    attributetype_set = models.ManyToManyField(Attributetype, related_name="attributetype_set_of", verbose_name='systems to be nested in the system',
                                               blank=True, null=False)
-    metatype_set = models.ManyToManyField(Metatype, related_name="metatypeset_systemtype", verbose_name='Possible edges in the system',    
+    metatype_set = models.ManyToManyField(Metatype, related_name="metatype_set_of", verbose_name='Possible edges in the system',    
                                          blank=True, null=False) 
-    processtype_set = models.ManyToManyField(Processtype, related_name="processtypeset_systemtype", verbose_name='Possible edges in the system',    
+    processtype_set = models.ManyToManyField(Processtype, related_name="processtype_set_of", verbose_name='Possible edges in the system',    
                                             blank=True, null=False) 
 
 
@@ -1215,7 +1323,7 @@ class AttributeSpecification(Node):
     specifying an attribute by a subject
     """
     attributetype = models.ForeignKey(Attributetype, verbose_name='property name')
-    subjects = models.ManyToManyField(NID, related_name="subjects_attrspec", verbose_name='subjects')
+    subjects = models.ManyToManyField(NID, related_name="subjects_attrspec_of", verbose_name='subjects')
 
 
     @property
@@ -1241,7 +1349,7 @@ class RelationSpecification(Node):
     specifying a relation with a subject 
     """
     relationtype = models.ForeignKey(Relationtype, verbose_name='relation name')
-    subjects = models.ManyToManyField(NID, related_name="subjects_relspec", verbose_name='subjects')
+    subjects = models.ManyToManyField(NID, related_name="subjects_in_relspec", verbose_name='subjects')
 
 
     @property
@@ -1265,9 +1373,9 @@ class NodeSpecification(Node):
     """
     A node specified (described) by its relations or attributes or both.  
     """
-    subject = models.ForeignKey(Node, related_name="subject_node", verbose_name='subject name')
-    relations = models.ManyToManyField(Relation, related_name="relations_nodespec", verbose_name='relations used to specify the domain')
-    attributes = models.ManyToManyField(Attribute, related_name="attributes_nodespec", verbose_name='attributes used to specify the domain')
+    subject = models.ForeignKey(Node, related_name="subject_nodespec", verbose_name='subject name')
+    relations = models.ManyToManyField(Relation, related_name="relations_in_nodespec", verbose_name='relations used to specify the domain')
+    attributes = models.ManyToManyField(Attribute, related_name="attributes_in_nodespec", verbose_name='attributes used to specify the domain')
     @property
     def composed_subject(self):
         '''
@@ -1289,7 +1397,7 @@ class Union(Node):
     """
     union of two classes
     """
-    nodetypes = models.ManyToManyField(Nodetype, related_name = 'nodetypes_union', verbose_name='node types for union')
+    nodetypes = models.ManyToManyField(Nodetype, related_name = 'union_of', verbose_name='node types for union')
         
     def __unicode__(self):
         return self.title
@@ -1298,7 +1406,7 @@ class Complement(Node):
     """
     complement of a  class
     """
-    nodetypes = models.ManyToManyField(Nodetype, related_name = 'nodetypes_complement', verbose_name='complementary nodes')
+    nodetypes = models.ManyToManyField(Nodetype, related_name = 'complement_of', verbose_name='complementary nodes')
         
     def __unicode__(self):
         return self.title
@@ -1307,7 +1415,7 @@ class Intersection(Node):
     """
     Intersection of classes
     """
-    nodetypes = models.ManyToManyField(Nodetype, related_name = 'nodetypes_intersection', verbose_name='intersection of classes')
+    nodetypes = models.ManyToManyField(Nodetype, related_name = 'intersection_of', verbose_name='intersection of classes')
         
     def __unicode__(self):
         return self.title
@@ -1316,14 +1424,13 @@ class Intersection(Node):
 reversion.register(NID)
 reversion.register(Node)
 reversion.register(Objecttype)
-reversion.register(Edgetype)
 reversion.register(Edge)
 
 if not reversion.is_registered(Systemtype):
     reversion.register(Systemtype)
 
 if not reversion.is_registered(Processtype):
-    reversion.register(Processtype, follow=["attributetype_set", "relationtype_set"])
+    reversion.register(Processtype, follow=["changing_attributetype_set", "changing_relationtype_set"])
 
 if not reversion.is_registered(Nodetype): 
     reversion.register(Nodetype, follow=["parent", "metatypes"])
@@ -1332,10 +1439,10 @@ if not reversion.is_registered(Metatype):
     reversion.register(Metatype, follow=["parent"])
 
 if not reversion.is_registered(Nodetype):
-    reversion.register(Nodetype, follow=["priornodes", "posteriornodes"])
+    reversion.register(Nodetype, follow=["prior_nodes", "posterior_nodes"])
 
 if not reversion.is_registered(Relationtype): 
-    reversion.register(Relationtype, follow=["subjecttypeLeft", "subjecttypeRight"])
+    reversion.register(Relationtype, follow=["left_subjecttype", "right_subjecttype"])
 
 if not reversion.is_registered(Attributetype): 
     reversion.register(Attributetype, follow=["subjecttype"])
@@ -1344,7 +1451,7 @@ if not reversion.is_registered(Attribute):
     reversion.register(Attribute, follow=["subject", "attributeType"])
 
 if not reversion.is_registered(Relation): 
-    reversion.register(Relation, follow=["subject1", "subject2", "relationtype"])
+    reversion.register(Relation, follow=["left_subject", "right_subject", "relationtype"])
 
 moderator.register(Nodetype, NodetypeCommentModerator)
 mptt.register(Metatype, order_insertion_by=['title'])

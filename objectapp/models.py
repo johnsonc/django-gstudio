@@ -91,18 +91,18 @@ class Gbobject(Node):
     excerpt = models.TextField(_('excerpt'), blank=True,
                                 help_text=_('optional element'))
 
-    priornodes = models.ManyToManyField('self', null=True, blank=True,
+    prior_nodes = models.ManyToManyField('self', null=True, blank=True,
                                verbose_name=_('depends on'),
-                               related_name='posteriors')
+                               related_name='posterior_nodes')
 
-    posteriornodes = models.ManyToManyField('self', null=True, blank=True,
+    posterior_nodes = models.ManyToManyField('self', null=True, blank=True,
                                verbose_name=_('required for'),
-                               related_name='priornodes')
+                               related_name='prior_nodes')
 
 
     tags = TagField(_('tags'))
     objecttypes = models.ManyToManyField(Nodetype, verbose_name=_('member of'),
-                                        related_name='gbobjects',
+                                        related_name='member_objects',
                                         blank=True, null=True)
 
     slug = models.SlugField(help_text=_('used for publication'),
@@ -152,7 +152,7 @@ class Gbobject(Node):
 
     def get_relations(self):
         relation_set = {}
-        # ALGO to find the relations and their leftroles and rightroles
+        # ALGO to find the relations and their left-subjecttypes and right_subjecttypes
         # 1. Get the relations containing a reference to the object. Retrieve where it occurs (left or right)
         # 2. Find out which RT they come from.
         # 3. For each RT, create a dict key and a value as a dict. And add the relation as a new key-value pair (rid:subject).
@@ -165,28 +165,28 @@ class Gbobject(Node):
 
         # RT dictionary to store a single relation
         rel_dict ={}
-        rel_dict['leftroles'] = {}
-        rel_dict['rightroles'] ={}
+        rel_dict['left-subjecttypes'] = {}
+        rel_dict['right_subjecttypes'] ={}
 
                
         for relation in left_relset:
             # check if relation already exists
-            if relation.relationtype.title not in rel_dict['leftroles'].keys():
+            if relation.relationtype.title not in rel_dict['left-subjecttypes'].keys():
                 # create a new list field and add to it
-                rel_dict['leftroles'][str(relation.relationtype.title)] = []
+                rel_dict['left-subjecttypes'][str(relation.relationtype.title)] = []
             # add 
-            rel_dict['leftroles'][str(relation.relationtype.title)].append(relation) 
+            rel_dict['left-subjecttypes'][str(relation.relationtype.title)].append(relation) 
 
         for relation in right_relset:
             # check if relation exists
-            if relation.relationtype.inverse not in rel_dict['rightroles'].keys():
+            if relation.relationtype.inverse not in rel_dict['right_subjecttypes'].keys():
                 # create a new list key field and add to it
-                rel_dict['rightroles'][str(relation.relationtype.inverse)] = []
+                rel_dict['right_subjecttypes'][str(relation.relationtype.inverse)] = []
                 # add to the existing key
-            rel_dict['rightroles'][str(relation.relationtype.inverse)].append(relation)
+            rel_dict['right_subjecttypes'][str(relation.relationtype.inverse)].append(relation)
 
-        relation_set.update(rel_dict['leftroles'])
-        relation_set.update(rel_dict['rightroles'])
+        relation_set.update(rel_dict['left-subjecttypes'])
+        relation_set.update(rel_dict['right_subjecttypes'])
         
         return relation_set
         
@@ -278,6 +278,26 @@ class Gbobject(Node):
         nbh.update(self.get_relations())
         nbh.update(self.get_attributes())
         # encapsulate the dictionary with its node name as key
+        return nbh
+
+
+    @property
+    def get_rendered_nbh(self):
+        """ 
+        Returns the neighbourhood of the object
+        """
+        fields = ['title','altname','pluralform']
+        nbh = {}
+        nbh['title'] = self.title        
+        nbh['altnames'] = self.altnames                
+        nbh['plural'] = self.plural
+        nbh['content'] = self.content
+        #return  all OTs the object is linked to
+        member_of_list = []
+        for each in self.objecttypes.all():
+            member_of_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title)) 
+        nbh['member_of'] = member_of_list
+
         return nbh
 
 
@@ -406,22 +426,22 @@ class Process(Gbobject):
     A store processes, events or changes described as changes in attributes and relations
     """
     processtypes = models.ManyToManyField(Processtype, verbose_name=_('member of process type'),
-                                          related_name='processes',
+                                          related_name='member_processes',
                                           blank=True, null=True)
     priorstate_attribute_set = models.ManyToManyField(Attribute, null=True, blank=True,
-                                                      verbose_name=_('priorstate of attribute set'),
-                                                      related_name='priorstate_attribute_set')
+                                                      verbose_name=_('in prior state attribute set of'),
+                                                      related_name='in_prior_state_attrset_of')
     priorstate_relation_set = models.ManyToManyField(Relation, null=True, blank=True,
                                                      verbose_name=_('priorsate of relation set'),
-                                                     related_name='priorstate_relation_set')
+                                                     related_name='in_prior_state_relset_of')
 
     poststate_attribute_set = models.ManyToManyField(Attribute, null=True, blank=True,
                                                      verbose_name=_('poststate of attribute set'),
-                                                     related_name='proststate_attribute_set')
+                                                     related_name='in_post_state_attrset_of')
 
     poststate_relation_set = models.ManyToManyField(Relation, null=True, blank=True,
-                               verbose_name=_('poststate of relation set'),
-                               related_name='poststate_relation_set')
+                               verbose_name=_('in poststate of relation set'),
+                               related_name='in_post_state_relset_of')
 
 
 
@@ -443,26 +463,26 @@ class System(Gbobject):
     """
 
     systemtypes = models.ManyToManyField(Systemtype, verbose_name=_('member of systemtype'),
-                                        related_name='systemtypes',
+                                        related_name='member_systems',
                                          blank=True, null=True)
 
-    object_set = models.ManyToManyField(Gbobject, related_name="objectset_system", 
+    gbobject_set = models.ManyToManyField(Gbobject, related_name="in_gbobject_set_of", 
                                        verbose_name='objects in the system',    
                                        blank=True, null=False) 
 
-    relation_set = models.ManyToManyField(Relation, related_name="relationset_system", 
+    relation_set = models.ManyToManyField(Relation, related_name="in_relation_set_of", 
                                          verbose_name='relations in the system',    
                                          blank=True, null=False) 
 
-    attribute_set = models.ManyToManyField(Attribute, related_name="attributeset_system", 
+    attribute_set = models.ManyToManyField(Attribute, related_name="in_attribute_set_of", 
                                           verbose_name='attributes in the system',
                                           blank=True, null=False)
 
-    process_set = models.ManyToManyField(Process, related_name="processset_system", 
+    process_set = models.ManyToManyField(Process, related_name="in_process_set_of", 
                                         verbose_name='processes in the system',    
                                         blank=True, null=False) 
 
-    system_set = models.ManyToManyField('self', related_name="systems_system", 
+    system_set = models.ManyToManyField('self', related_name="in_system_set_of", 
                                        verbose_name='nested systems',
                                        blank=True, null=False)
 
@@ -473,13 +493,13 @@ class System(Gbobject):
 
     
 if not reversion.is_registered(Process):
-    reversion.register(Process, follow=["priorstate_attribute_set", "priorstate_relation_set", "poststate_attribute_set", "poststate_relation_set", "priornodes", "posteriornodes"])
+    reversion.register(Process, follow=["priorstate_attribute_set", "priorstate_relation_set", "poststate_attribute_set", "poststate_relation_set", "prior_nodes", "posterior_nodes"])
 
 if not reversion.is_registered(System): 
-    reversion.register(System, follow=["systemtypes", "object_set", "relation_set", "attribute_set", "process_set", "system_set", "priornodes", "posteriornodes"])
+    reversion.register(System, follow=["systemtypes", "gbobject_set", "relation_set", "attribute_set", "process_set", "system_set", "prior_nodes", "posterior_nodes"])
 
 if not reversion.is_registered(Gbobject):
-    reversion.register(Gbobject, follow=["objecttypes", "priornodes", "posteriornodes"])
+    reversion.register(Gbobject, follow=["objecttypes", "prior_nodes", "posterior_nodes"])
 
 
 moderator.register(Gbobject, GbobjectCommentModerator)

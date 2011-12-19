@@ -6,6 +6,7 @@ from django.contrib.sites.models import Site
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 
+from gstudio.models import NID
 from gstudio.models import Nodetype
 from gstudio.models import Objecttype
 from gstudio.models import Metatype
@@ -20,25 +21,25 @@ from gstudio.models import Union
 from gstudio.models import Complement
 from gstudio.models import Intersection
 
-from gstudio.models import AttributeCharfield
+from gstudio.models import AttributeCharField
 from gstudio.models import AttributeTextField
-from gstudio.models import IntegerField
-from gstudio.models import CommaSeparatedIntegerField
-from gstudio.models import GbBigIntegerField
-from gstudio.models import PositiveIntegerField
-from gstudio.models import DecimalField
-from gstudio.models import FloatField 
-from gstudio.models import BooleanField
-from gstudio.models import NullBooleanField
-from gstudio.models import DateField
-from gstudio.models import DateTimeField
-from gstudio.models import TimeField
-from gstudio.models import EmailField
-from gstudio.models import FileField
-from gstudio.models import FilePathField
-from gstudio.models import ImageField
-from gstudio.models import URLField
-from gstudio.models import IPAddressField
+from gstudio.models import AttributeIntegerField
+from gstudio.models import AttributeCommaSeparatedIntegerField
+from gstudio.models import AttributeBigIntegerField
+from gstudio.models import AttributePositiveIntegerField
+from gstudio.models import AttributeDecimalField
+from gstudio.models import AttributeFloatField 
+from gstudio.models import AttributeBooleanField
+from gstudio.models import AttributeNullBooleanField
+from gstudio.models import AttributeDateField
+from gstudio.models import AttributeDateTimeField
+from gstudio.models import AttributeTimeField
+from gstudio.models import AttributeEmailField
+from gstudio.models import AttributeFileField
+from gstudio.models import AttributeFilePathField
+from gstudio.models import AttributeImageField
+from gstudio.models import AttributeURLField
+from gstudio.models import AttributeIPAddressField
 
 
 
@@ -50,7 +51,7 @@ from gstudio.models import Processtype
 from gstudio.admin.widgets import TreeNodeChoiceField
 from gstudio.admin.widgets import MPTTFilteredSelectMultiple
 from gstudio.admin.widgets import MPTTModelMultipleChoiceField
-
+from reversion.models import Version
         
 class MetatypeAdminForm(forms.ModelForm):
     """Form for Metatype's Admin"""
@@ -102,6 +103,7 @@ class ObjecttypeAdminForm(forms.ModelForm):
         queryset=Nodetype.objects.all(),
         widget=MPTTFilteredSelectMultiple(_('nodetypes'), False,
                                           attrs={'rows': '10'}))
+
 
 
 
@@ -168,6 +170,55 @@ class RelationtypeAdminForm(forms.ModelForm):
 
 
 class RelationAdminForm(forms.ModelForm):
+
+
+    def ApplicableNodeTypes_filter(self):
+        choice = 'NT'
+        if choice == 'ED':
+            nid = 'Edge'
+        if choice == 'ND':
+            nid = 'Node' 
+        if choice == 'NT':
+            nid = 'Nodetype'
+        if choice == 'ET':
+            nid = 'Edgetype'
+        if choice == 'OT':
+            nid = 'Objecttype'
+        if choice == 'RT':
+            nid = 'Relationtype'
+        if choice == 'MT':
+            nid = 'Metatype'
+        if choice == 'AT':
+            nid = 'Attributetype'
+        if choice == 'RN':
+            nid = 'Relation'
+        if choice == 'AS':
+            nid = 'Attributes'
+        if choice == 'ST':
+            nid = 'Systemtype'
+        if choice == 'SY':
+            nid = 'System'
+
+        node = NID.objects.get(Objecttype)
+        vrs = Version.objects.filter(type=0 , object_id=node.id) 
+        vrs =  vrs[0]
+        AppNode = vrs.object._meta.module_name
+        AppNodeList = AppNode.objects.all()
+        return AppNodeList
+
+
+
+
+        
+        
+
+        
+
+    
+
+
+
+        
 
     class Meta:
         """MetatypeAdminForm's Meta"""
@@ -252,6 +303,19 @@ class AttributetypeAdminForm(forms.ModelForm):
 
 
 class AttributeAdminForm(forms.ModelForm):
+
+    def subject_filter(attr):
+        """
+        returns applicable selection of nodes for selecting objects
+        """
+        for each in Objecttype.objects.all():
+            if attr.subjecttype.id == each.id:
+                return each.get_members
+
+    def __init__(self, *args, **kwargs):
+        super(AttributeAdminForm, self).__init__(*args, **kwargs)
+        self.fields["subject"].queryset = subject_filter(attr)
+        
 
     class Meta:
         """MetatypeAdminForm's Meta"""
@@ -350,10 +414,6 @@ class ComplementAdminForm(forms.ModelForm):
     class Meta:
         model = Complement
 
-class IntersectionAdminForm(forms.ModelForm):
-    class Meta:
-        model = Intersection
-
 
 
 class IntersectionAdminForm(forms.ModelForm):
@@ -362,71 +422,71 @@ class IntersectionAdminForm(forms.ModelForm):
 
 ### Datatypes here ###
 
-class AttributeCharfieldAdminForm(forms.ModelForm):
+class AttributeCharFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = AttributeCharfield
+        model = AttributeCharField
 
 class AttributeTextFieldAdminForm(forms.ModelForm):
     class Meta:
         model = AttributeTextField
 
-class IntegerFieldAdminForm(forms.ModelForm):
+class AttributeIntegerFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = IntegerField
+        model = AttributeIntegerField
 
-class CommaSeparatedIntegerFieldAdminForm(forms.ModelForm):
+class AttributeCommaSeparatedIntegerFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = CommaSeparatedIntegerField
-class GbBigIntegerFieldAdminForm(forms.ModelForm):
+        model = AttributeCommaSeparatedIntegerField
+class AttributeBigIntegerFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = GbBigIntegerField
-class PositiveIntegerFieldAdminForm(forms.ModelForm):
+        model = AttributeBigIntegerField
+class AttributePositiveIntegerFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = PositiveIntegerField
+        model = AttributePositiveIntegerField
 
-class DecimalFieldAdminForm(forms.ModelForm):
+class AttributeDecimalFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = DecimalField
-class FloatFieldAdminForm(forms.ModelForm):
+        model = AttributeDecimalField
+class AttributeFloatFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = FloatField
-class BooleanFieldAdminForm(forms.ModelForm):
+        model = AttributeFloatField
+class AttributeBooleanFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = BooleanField
+        model = AttributeBooleanField
 
-class NullBooleanFieldAdminForm(forms.ModelForm):
+class AttributeNullBooleanFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = NullBooleanField
-class DateFieldAdminForm(forms.ModelForm):
+        model = AttributeNullBooleanField
+class AttributeDateFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = DateField
-class DateTimeFieldAdminForm(forms.ModelForm):
+        model = AttributeDateField
+class AttributeDateTimeFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = DateField
+        model = AttributeDateField
 
-class TimeFieldAdminForm(forms.ModelForm):
+class AttributeTimeFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = TimeField
+        model = AttributeTimeField
 
-class EmailFieldAdminForm(forms.ModelForm):
+class AttributeEmailFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = EmailField
-class FileFieldAdminForm(forms.ModelForm):
+        model = AttributeEmailField
+class AttributeFileFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = FileField
-class FilePathFieldAdminForm(forms.ModelForm):
+        model = AttributeFileField
+class AttributeFilePathFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = FilePathField
-class ImageFieldAdminForm(forms.ModelForm):
+        model = AttributeFilePathField
+class AttributeImageFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = ImageField
+        model = AttributeImageField
 
-class URLFieldAdminForm(forms.ModelForm):
+class AttributeURLFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = URLField
-class IPAddressFieldAdminForm(forms.ModelForm):
+        model = AttributeURLField
+class AttributeIPAddressFieldAdminForm(forms.ModelForm):
     class Meta:
-        model = IPAddressField
+        model = AttributeIPAddressField
 
 
 
