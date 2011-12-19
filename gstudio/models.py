@@ -900,21 +900,21 @@ class Attribute(Edge):
         '''
         composes the attribution as a name:value pair sentence without the subject.
         '''
-        return dict({str(self.attributeTypeScope) + str(self.attributeType): str(self.valueScope)+ str(self.svalue)})
+        return dict({str(self.attributetype_scope) + str(self.attributetype): str(self.value_scope)+ str(self.svalue)})
 
     @property
     def composed_sentence(self):
         '''
         composes the attribution as a sentence in a triple format.
         '''
-        return '%s %s has %s %s %s %s' % (self.subjectScope, self.subject, self.attributeTypeScope, self.attributeType, self.valueScope, self.svalue)
+        return '%s %s has %s %s %s %s' % (self.subject_scope, self.subject, self.attributetype_scope, self.attribute_type, self.value_scope, self.svalue)
 
     @property
     def composed_attribution(self):
         '''
         composes a name to the attribute
         '''
-        return 'the %s of %s is %s' % (self.attributeType, self.subject, self.svalue)
+        return 'the %s of %s is %s' % (self.attribute_type, self.subject, self.svalue)
     
     def subject_filter(self,attr):
         """
@@ -1244,7 +1244,7 @@ if not reversion.is_registered(Attributetype):
     reversion.register(Attributetype, follow=["subjecttype"])
 
 if not reversion.is_registered(Attribute): 
-    reversion.register(Attribute, follow=["subject", "attributeType"])
+    reversion.register(Attribute, follow=["subject", "attributetype"])
 
 if not reversion.is_registered(Relation): 
     reversion.register(Relation, follow=["left_subject", "right_subject", "relationtype"])
