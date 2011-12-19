@@ -24,12 +24,15 @@ from djangoratings.fields import RatingField
 from tagging.fields import TagField
 from gstudio.models import Nodetype
 from gstudio.models import Objecttype
-from gstudio.models import Node
-from gstudio.models import Edge
+from gstudio.models import Relationtype
 from gstudio.models import Systemtype
 from gstudio.models import Processtype
+from gstudio.models import Attributetype
 from gstudio.models import Attribute
 from gstudio.models import Relation
+from gstudio.models import Node
+from gstudio.models import Edge
+
 
 import reversion
 from objectapp.settings import UPLOAD_TO
@@ -196,6 +199,66 @@ class Gbobject(Node):
                 
         return attributes
             
+    
+    
+    def get_possible_rels(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the R's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        rels = {}
+        rt_set = Relation.objects.all()
+        right_subset = []
+        left_subset = []
+        
+        for each in ancestor_list:
+            # retrieve all the RT's from each ancestor 
+            right_subset.extend(rt_set.filter(subject1=each.id))
+            left_subset.extend(rt_set.filter(subject2=each.id))
+         
+        rels['possible_leftroles'] = left_subset
+        rels['possible_rightroles'] = right_subset
+        
+        return rels
+
+
+    def get_possible_attributes(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the RT's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # recursive thru parent field and append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        attrs = [] 
+                
+        for each in ancestor_list:
+            # retrieve all the AT's from each ancestor 
+            attrs.extend(Attribute.objects.filter(subject=each.id))
+                     
+        return attrs
+
+
+
 
     @property
     def get_nbh(self):
