@@ -106,7 +106,16 @@ INSTALLED_APPS = (
     'registration',
     'graphviz',
     'demo',
+    'ajax_select',
     )
+
+AJAX_LOOKUP_CHANNELS = {
+        #   pass a dict with the model and the field to search against
+        'subject'  : {'model':'gstudio.attribute', 'search_field':'attributeType'}
+    }
+AJAX_SELECT_BOOTSTRAP = True
+AJAX_SELECT_INLINES = 'inline'
+
 
 from gstudio.xmlrpc import GSTUDIO_XMLRPC_METHODS
 XMLRPC_METHODS = GSTUDIO_XMLRPC_METHODS
