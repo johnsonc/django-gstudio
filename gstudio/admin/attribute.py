@@ -10,7 +10,7 @@ import reversion
 
 class AttributeAdmin(reversion.VersionAdmin):
     class Media:
-        js = ("gstudio/js/gstudio.js",)
+        js = ("gstudio/js/gstudiojs.js",)
     
     def save_model(self, request, attribute, form, change):
         attribute.title = attribute.composed_attribution

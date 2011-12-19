@@ -914,7 +914,7 @@ class Attribute(Edge):
         '''
         composes a name to the attribute
         '''
-        return 'the %s of %s is %s' % (self.attributeType, self.subject, self.svalue)
+        return 'the %s of %s is %s' % (self.attributetype, self.subject, self.svalue)
     
     def subject_filter(self,attr):
         """

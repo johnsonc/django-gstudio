@@ -154,6 +154,8 @@ gstudio/static/gstudio/img/trans.png
 gstudio/static/gstudio/img/wlw/comments.png
 gstudio/static/gstudio/img/wlw/objectapp.png
 gstudio/static/gstudio/img/wlw/watermark.png
+gstudio/static/gstudio/js/gstudiojs.js
+gstudio/static/gstudio/js/gstudiojs.js~
 gstudio/static/gstudio/js/jquery.autocomplete.js
 gstudio/static/gstudio/js/jquery.bgiframe.js
 gstudio/static/gstudio/js/jquery.js
@@ -449,6 +451,7 @@ gstudio/url_shortener/backends/__init__.py
 gstudio/url_shortener/backends/bitly.py
 gstudio/url_shortener/backends/default.py
 gstudio/urls/__init__.py
+gstudio/urls/ajaxurls.py
 gstudio/urls/authors.py
 gstudio/urls/capabilities.py
 gstudio/urls/discussions.py
