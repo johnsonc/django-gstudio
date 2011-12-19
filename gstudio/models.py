@@ -907,14 +907,14 @@ class Attribute(Edge):
         '''
         composes the attribution as a sentence in a triple format.
         '''
-        return '%s %s has %s %s %s %s' % (self.subject_scope, self.subject, self.attributetype_scope, self.attribute_type, self.value_scope, self.svalue)
+        return '%s %s has %s %s %s %s' % (self.subject_scope, self.subject, self.attributetype_scope, self.attributetype, self.value_scope, self.svalue)
 
     @property
     def composed_attribution(self):
         '''
         composes a name to the attribute
         '''
-        return 'the %s of %s is %s' % (self.attribute_type, self.subject, self.svalue)
+        return 'the %s of %s is %s' % (self.attributetype, self.subject, self.svalue)
     
     def subject_filter(self,attr):
         """
