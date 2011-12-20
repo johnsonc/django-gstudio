@@ -411,8 +411,12 @@ class Nodetype(Node):
         for each in self.metatypes.all():
             member_of_dict[each.title]= each.get_absolute_url()
         nbh['member_of_metatypes']=member_of_dict
-           
-        nbh['type_of'] = self.parent
+        typeof={}
+        par=self.parent
+        if par:
+            typeof[par] = par.get_absolute_url()
+        nbh['type_of']=typeof
+        #get all subtypes 
         subtypes={}
         for each in Nodetype.objects.filter(parent=self.id):
             subtypes[each.title] =each.get_absolute_url()
