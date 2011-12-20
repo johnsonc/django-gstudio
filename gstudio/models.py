@@ -405,19 +405,23 @@ class Nodetype(Node):
         nbh = {}
         nbh['title'] = self.title
         nbh['altnames'] = self.altnames
-        nbh['plural'] = self.plural        
-        #get all MTs 
+        nbh['plural'] = self.plural
+        #get all MTs
         member_of_dict = {}
         for each in self.metatypes.all():
             member_of_dict[each.title]= each.get_absolute_url()
         nbh['member_of_metatypes']=member_of_dict
-           
-        nbh['type_of'] = self.parent
+        typeof={}
+        par=self.parent
+        if par:
+            typeof[par] = par.get_absolute_url()
+        nbh['type_of']=typeof
+        #get all subtypes
         subtypes={}
         for each in Nodetype.objects.filter(parent=self.id):
             subtypes[each.title] =each.get_absolute_url()
-        nbh['contains_subtypes']=subtypes   
-        # get all the objects inheriting this OT 
+        nbh['contains_subtypes']=subtypes
+        # get all the objects inheriting this OT
         contains_members_dict = {}
         for each in self.member_objects.all():
            contains_members_dict[each.title]= each.get_absolute_url()
@@ -448,7 +452,7 @@ class Nodetype(Node):
             reltypes[each.title]=each.get_absolute_url()
         for each in self.right_subject_of.all():
             reltypes[each.title]=each.get_absolute_url()
-	nbh['relations']=relations
+        nbh['relations']=relations
         #get Attributes
         attributes = self.subject_of.all()
         nbh['attributes']=attributes
@@ -458,15 +462,15 @@ class Nodetype(Node):
             attributetypes[each.title]=each.get_absolute_url()
         nbh['ats']=attributetypes
         #get RTs as leftroles and rightroles
-        leftroles = {} 
+        leftroles = {}
         for each in self.left_subjecttype_of.all():
             leftroles[each.title]=each.get_absolute_url()
         nbh['leftroles']=leftroles
-        rightroles = {} 
+        rightroles = {}
         for each in self.right_subjecttype_of.all():
             rightroles[each.title]=each.get_absolute_url()
         nbh['rightroles']=rightroles
-        return nbh    
+        return nbh 
  
     @property
     def previous_nodetype(self):
