@@ -695,7 +695,7 @@ class Objecttype(Nodetype):
 
 class Relationtype(Nodetype):
     '''
-    Binary Relationtypes are defined in this table.
+    Properties with left and right subjects (Binary relations) are defined in this class.
     '''
     inverse = models.CharField(_('inverse name'), help_text=_('when subjecttypes are interchanged, what should be the name of the relation type? This is mandatory field. If the relation is symmetric, same name will do.'), max_length=255,db_index=True ) 
     left_subjecttype = models.ForeignKey(NID,related_name="left_subjecttype_of", verbose_name='left role')  
@@ -1127,7 +1127,7 @@ class AttributeSpecification(Node):
         '''
         composes a name to the attribute
         '''
-        return 'the %s of %s' % (self.attributetype, self.subject)
+        return 'the %s of %s' % (self.attributetype, self.subjects)
 
 
     def __unicode__(self):
