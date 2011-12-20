@@ -1160,7 +1160,7 @@ class RelationSpecification(Node):
 
 
     class Meta:
-        verbose_name = _('relation as subject')
+        verbose_name = _('relation specification')
         permissions = (('can_view_all', 'Can view all'),
                        ('can_change_author', 'Can change author'), )
 
@@ -1184,7 +1184,7 @@ class NodeSpecification(Node):
 
 
     class Meta:
-        verbose_name = _('relation as subject')
+        verbose_name = _('Node specification')
         permissions = (('can_view_all', 'Can view all'),
                        ('can_change_author', 'Can change author'), )
 
