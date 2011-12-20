@@ -413,9 +413,10 @@ class Nodetype(Node):
         nbh['member_of_metatypes']=member_of_dict
            
         nbh['type_of'] = self.parent
-
-        nbh['contains_subtypes'] = Nodetype.objects.filter(parent=self.id)
-
+        subtypes={}
+        for each in Nodetype.objects.filter(parent=self.id):
+            subtypes[each.title] =each.get_absolute_url()
+        nbh['contains_subtypes']=subtypes   
         # get all the objects inheriting this OT 
         contains_members_dict = {}
         for each in self.member_objects.all():
@@ -449,7 +450,7 @@ class Nodetype(Node):
             reltypes[each.title]=each.get_absolute_url()
 	nbh['relations']=relations
         #get Attributes
-        attributes=self.subject_of.all()
+        attributes = self.subject_of.all()
         nbh['attributes']=attributes
         #get ATs
         attributetypes={}
