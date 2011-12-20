@@ -94,6 +94,8 @@ gstudio/management/commands/feed2gstudio.py
 gstudio/management/commands/gstudio2wp.py
 gstudio/management/commands/spam_cleanup.py
 gstudio/management/commands/wp2gstudio.py
+gstudio/migrations/0001_initial.py
+gstudio/migrations/__init__.py
 gstudio/plugins/__init__.py
 gstudio/plugins/admin.py
 gstudio/plugins/cms_app.py
@@ -357,6 +359,7 @@ gstudio/templates/gstudio/_header.html
 gstudio/templates/gstudio/_nodetype_detail.html
 gstudio/templates/gstudio/_nodetype_neighbourhood.html
 gstudio/templates/gstudio/_subtype_detail.html
+gstudio/templates/gstudio/attributetype_detail.html
 gstudio/templates/gstudio/author_list.html
 gstudio/templates/gstudio/base.html
 gstudio/templates/gstudio/login.html
@@ -522,12 +525,6 @@ objectapp/management/commands/objectapp2wp.py
 objectapp/management/commands/spam_cleanup.py
 objectapp/management/commands/wp2objectapp.py
 objectapp/migrations/0001_initial.py
-objectapp/migrations/0002_auto__add_field_gbobject_pingback_enabled.py
-objectapp/migrations/0003_auto__chg_field_objecttype_title__chg_field_objecttype_slug__add_unique_ca.py
-objectapp/migrations/0004_mptt_objecttypes.py
-objectapp/migrations/0005_gbobject_protection.py
-objectapp/migrations/0006_gbobject_template.py
-objectapp/migrations/0007_gbobject_featured.py
 objectapp/migrations/__init__.py
 objectapp/plugins/__init__.py
 objectapp/plugins/admin.py
