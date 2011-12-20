@@ -411,6 +411,7 @@ class Nodetype(Node):
         for each in self.metatypes.all():
             member_of_dict[each.title]= each.get_absolute_url()
         nbh['member_of_metatypes']=member_of_dict
+        #get parents
         typeof={}
         par=self.parent
         if par:
@@ -421,7 +422,7 @@ class Nodetype(Node):
         for each in Nodetype.objects.filter(parent=self.id):
             subtypes[each.title] =each.get_absolute_url()
         nbh['contains_subtypes']=subtypes
-        # get all the objects inheriting this OT
+        # get all the objects as members of this OT
         contains_members_dict = {}
         for each in self.member_objects.all():
            contains_members_dict[each.title]= each.get_absolute_url()
@@ -910,15 +911,15 @@ class Relation(Edge):
     @property
     def inversed_sentence(self):
         "composes the inverse relation as a sentence in a triple format."
-        return '%s %s %s %s %s' % (self.objectScope, self.subject2, self.relationtype.inverse, self.subject1Scope, self.subject1 )
+        return '%s %s %s %s %s' % (self.objectScope, self.right_subject, self.relationtype.inverse, self.left_subject_scope, self.left_subject )
 
     @property
     def key_value(self):
-        return dict({str(self.relationtype):str(self.subject2)})
+        return dict({str(self.relationtype):str(self.right_subject)})
 
     @property
     def inverse_key_value(self):
-        return dict({str(self.relationtype.inverse):str(self.subject1)})
+        return dict({str(self.relationtype.inverse):str(self.left_subject)})
 
 
     @property
@@ -927,7 +928,14 @@ class Relation(Edge):
         
         if self.relationtype:
            # for relation in self.relationtype():
-                return '%s %s %s' % (self.subject1,self.relationtype,self.subject2 )
+                return '%s %s %s' % (self.left_subject,self.relationtype,self.right_subject )
+
+    @property
+    def partial_composition(self):
+        '''
+        function that composes the right_subject and relation name, as in "x as a friend", "y as a sibling"
+        '''
+        return '%s as a %s' % (self.right_subject, self.relationtype) 
 
 
 class Attribute(Edge):
@@ -989,6 +997,14 @@ class Attribute(Edge):
         '''
         return 'the %s of %s is %s' % (self.attributetype, self.subject, self.svalue)
     
+    @property
+    def partial_composition(self):
+        '''
+        function that composes the value and attribute name, as in "red as color", "4 as length"
+        '''
+        return '%s as %s' % (self.svalue, self.attributetype) 
+
+
     def subject_filter(self,attr):
         """
         returns applicable selection of nodes for selecting objects
@@ -1203,7 +1219,10 @@ class AttributeSpecification(Node):
         '''
         composes a name to the attribute
         '''
-        return 'the %s of %s' % (self.attributetype, self.subjects)
+        subjects = u''
+        for each in self.subjects.all():
+            subjects = subjects + each.title + ' '
+        return 'the %s of %s' % (self.attributetype, subjects)
 
 
     def __unicode__(self):
@@ -1229,7 +1248,10 @@ class RelationSpecification(Node):
         '''
         composing an expression with relation name and subject
         '''
-        return 'the %s of %s' % (self.relationtype, self.subject)
+        subjects = u''
+        for each in self.subjects.all():
+            subjects = subjects + each.title + ' '
+        return 'the %s of %s' % (self.relationtype, subjects)
 
     def __unicode__(self):
         return self.composed_subject
@@ -1248,11 +1270,18 @@ class NodeSpecification(Node):
     subject = models.ForeignKey(Node, related_name="subject_nodespec", verbose_name='subject name')
     relations = models.ManyToManyField(Relation, related_name="relations_in_nodespec", verbose_name='relations used to specify the domain')
     attributes = models.ManyToManyField(Attribute, related_name="attributes_in_nodespec", verbose_name='attributes used to specify the domain')
+
     @property
     def composed_subject(self):
         '''
         composing an expression subject and relations
         '''
+        relations = u''
+        for each in self.relations.all():
+            relations = relations + each.partial_composition + ', '
+        attributes = u''
+        for each in self.attributes.all():
+            attributes = attributes + each.partial_composition + ', '
         return 'the %s with %s, %s' % (self.subject, self.relations, self.attributes)
 
     def __unicode__(self):
