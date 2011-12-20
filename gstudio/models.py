@@ -1185,7 +1185,10 @@ class Systemtype(Nodetype):
 
 class AttributeSpecification(Node):
     """
-    specifying an attribute by a subject
+    specifying an attribute by a subject to say for example:
+    population of India, color of a flower etc.  These do not yeild a
+    proposition but a description, which can be used as a subject in
+    another sentence.
     """
     attributetype = models.ForeignKey(Attributetype, verbose_name='property name')
     subjects = models.ManyToManyField(NID, related_name="subjects_attrspec_of", verbose_name='subjects')
