@@ -56,7 +56,9 @@
                            {% endif %}
                            {% if key == "contains_subtypes" %}
                                 <b> SubTypes :<nbsp></b>
-                                          {{value}} <br/>
+                                {% for stkey,stvalue in value.items %}
+                                        <a href="{{stvalue}}">{{stkey}}</a>;
+                                {% endfor %}<br/>
                            {% endif %}
                            
                            {% if key == "member_of_metatypes" %}
