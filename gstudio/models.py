@@ -832,7 +832,7 @@ class Relation(Edge):
     @property
     def composed_sentence(self):
         "composes the relation as a sentence in a triple format."
-        return '%s %s %s %s %s %s' % (self.subject1Scope, self.subject1, self.relationTypeScope, self.relationtype, self.objectScope, self.subject2)
+        return '%s %s %s %s %s %s' % (self.left_subject_scope, self.left_subject, self.relationtype_scope, self.relationtype, self.right_subject_scope, self.right_subject)
 
     @property
     def inversed_sentence(self):
