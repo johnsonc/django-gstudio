@@ -10,23 +10,23 @@
 
 {% block link %}
   {{ block.super }}
-  {% with object.previous_nodetype as previous_nodetype %}{% if previous_nodetype %}
-  <link rel="prev" title="{{ previous_nodetype.title }}" href="{{ previous_nodetype.get_absolute_url }}" />
+  {% with object.previous_attributetype as previous_attributetype %}{% if previous_attributetype %}
+  <link rel="prev" title="{{ previous_attributetype.title }}" href="{{ previous_attributetype.get_absolute_url }}" />
   {% endif %}{% endwith %}
-  {% with object.next_nodetype as next_nodetype %}{% if next_nodetype %}
-  <link rel="next" title="{{ next_nodetype.title }}" href="{{ next_nodetype.get_absolute_url }}" />
+  {% with object.next_attributetype as next_attributetype %}{% if next_attributetype %}
+  <link rel="next" title="{{ next_attributetype.title }}" href="{{ next_attributetype.get_absolute_url }}" />
   {% endif %}{% endwith %}
   <link rel="shortlink" href="{{ object.short_url }}" />
   <link rel="canonical" href="{{ object.get_absolute_url }}" />
   {% with year=object.creation_date|date:"Y" month=object.creation_date|date:"m" day=object.creation_date|date:"d" %}
   <link rel="alternate" type="application/rss+xml" title="{% trans "RSS Feed of discussions on" %} '{{ object.title }}'"
-        href="{% url gstudio_nodetype_discussion_feed year month day object.slug %}" />
+        href="{% url gstudio_attributetype_discussion_feed year month day object.slug %}" />
   <link rel="alternate" type="application/rss+xml" title="{% trans "RSS Feed of comments on" %} '{{ object.title }}'"
-        href="{% url gstudio_nodetype_comment_feed year month day object.slug %}" />
+        href="{% url gstudio_attributetype_comment_feed year month day object.slug %}" />
   <link rel="alternate" type="application/rss+xml" title="{% trans "RSS Feed of pingbacks on" %} '{{ object.title }}'"
-        href="{% url gstudio_nodetype_pingback_feed year month day object.slug %}" />
+        href="{% url gstudio_attributetype_pingback_feed year month day object.slug %}" />
   <link rel="alternate" type="application/rss+xml" title="{% trans "RSS Feed of trackbacks on" %} '{{ object.title }}'"
-        href="{% url gstudio_nodetype_trackback_feed year month day object.slug %}" />
+        href="{% url gstudio_attributetype_trackback_feed year month day object.slug %}" />
   {% endwith %}
 {% endblock %}
 
@@ -34,12 +34,13 @@
 {% block content %}
 
 
-{% block nodetype-content %}
+{% block attributetype-content %}
   {% with object.html_content|safe as object_content %}
 
 
-             <b>Name: </b> {{ object.title }} <br/>
-             {% for key,value in object.get_rendered_nbh.items %}
+             <b>Test successful : </b> {{ object.title }} <br/>
+
+	    {% for key,value in object.get_rendered_nbh.items %}
                     
                   {% if value %}
                            {% if key == "altnames" %}
@@ -58,7 +59,14 @@
                                 <b> SubTypes :<nbsp></b>
                                           {{value}} <br/>
                            {% endif %}
-                           
+                           {% if key == "siblings" %}
+                                {% if value %}
+				   <b>Siblings: <nbsp> </b>
+                                {% endif %}
+				    {% for sibkey,sibvalue in value.items %}
+                                        <a href="{{sibvalue}}">{{sibkey}}</a>;	      
+				    {% endfor %}       <br/>
+	                   {% endif %}
                            {% if key == "member_of_metatypes" %}
                                 <b> Member of Metatypes :<nbsp></b>
                                     {% for mkey,mvalue in value.items %}
@@ -66,9 +74,21 @@
                                     {% endfor %}<br/>
                            {% endif %}
                            {% if key == "contains_members" %}
-                                <b>Contains Members :<nbsp></b>
+                                <b>Contains Member objects :<nbsp></b>
                                     {% for mkey,mvalue in value.items %}
                                         <a href="{{mvalue}}">{{mkey}}</a>;
+                                    {% endfor %}<br/>
+                           {% endif %}
+			   {% if key == "leftroles" %}
+                                <b>Left role of Relation types :<nbsp></b>
+                                    {% for lftkey, lftvalue in value.items %}
+                                        <a href="{{lftvalue}}">{{lftkey}}</a>;
+                                    {% endfor %}<br/>
+                           {% endif %}
+                           {% if key == "rightroles" %}
+                                <b>Right role of Relation types :<nbsp></b>
+                                    {% for rghtkey, rghtvalue in value.items %}
+                                        <a href="{{rghtvalue}}">{{rghtkey}}</a>;
                                     {% endfor %}<br/>
                            {% endif %}
                            {% if key == "posteriornodes" %}
@@ -83,63 +103,9 @@
                                         <a href="{{mvalue}}">{{mkey}}</a>;
                                     {% endfor %}<br/>
                            {% endif %}
-                           {% if key == "authors" %}
-                                {% if value %}
-				   <b>Authors: <nbsp> </b>
-                                {% endif %}
-				    {% for athkey,athvalue in value.items %}
-                                        <a href="{{athvalue}}">{{athkey}}</a>;	      
-				    {% endfor %}       <br/>
-	                   {% endif %}
                            
-                           {% if key == "siblings" %}
-                                {% if value %}
-				   <b>Siblings: <nbsp> </b>
-                                {% endif %}
-				    {% for sibkey,sibvalue in value.items %}
-                                        <a href="{{sibvalue}}">{{sibkey}}</a>;	      
-				    {% endfor %}       <br/>
-	                   {% endif %}
-                           {% if key == "ats" %}
-                                {% if value %}
-				   <b>Attribute Types: <nbsp> </b>
-                                {% endif %}
-				    {% for atkey,atvalue in value.items %}
-                                        <a href="{{atvalue}}">{{atkey}}</a>;	      
-				    {% endfor %}       <br/>
-	                   {% endif %}
-                           {% if key == "relations" %}
-                                {% if value %}
-				   <b>Relations: <nbsp> </b>
-                                {% endif %}
-				    {% for relkey,relvalue in value.items %}
-                                        <a href="{{relvalue}}">{{relkey}}</a>;	      
-				    {% endfor %}       <br/>
-	                   {% endif %}
-                           {% if key == "attributes" %}
-                                {% if value %}
-				   <b>Attributes: <nbsp> </b>
-                                {% endif %}
-				    {% for items in value %}
-                                        {{items}};	      
-				    {% endfor %}       <br/>
-	                   {% endif %}
-                           {% if key == "leftroles" %}
-                                {% if value %}
-				   <b>Left roles: <nbsp> </b>
-                                {% endif %}
-				    {% for lrkey,lrvalue in value.items %}
-                                        <a href="{{lrvalue}}">{{lrkey}}</a>;	      
-				    {% endfor %}       <br/>
-	                   {% endif %}
-                           {% if key == "rightroles" %}
-                                {% if value %}
-				   <b>Right roles: <nbsp> </b>
-                                {% endif %}
-				    {% for rrkey,rrvalue in value.items %}
-                                        <a href="{{rrvalue}}">{{rrkey}}</a>;	      
-				    {% endfor %}       <br/>
-	                   {% endif %}
+                           
+                           
                     {% endif %}
                 {% endfor %}
 
@@ -150,10 +116,10 @@
 
 
 
-{% block nodetype-widgets %}
-<div class="nodetype-widgets span-16 last">  {% with object.next_nodetype as next_nodetype %}
+{% block attributetype-widgets %}
+<div class="attributetype-widgets span-16 last">  {% with object.next_attributetype as next_attributetype %}
   {% if object.posteriornodes.all %}
-  <div class="nodetype-next">
+  <div class="attributetype-next">
     <h5>{% trans "Posterior node" %}</h5>
 	          {% for items in object.posteriornodes.all %}
 	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
@@ -161,9 +127,9 @@
   </div>
   {% endif %}
   {% endwith %}
-  <!-- {% with object.previous_nodetype as previous_nodetype %} -->
+  <!-- {% with object.previous_attributetype as previous_attributetype %} -->
   {% if object.priornodes.all %}
-  <div class="nodetype-next">
+  <div class="attributetype-next">
     <h5>{% trans "Prior node" %}</h5>
 	          {% for items in object.priornodes.all %}
 	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
@@ -172,12 +138,12 @@
   {% endif %}
   {% endwith %}
   {% if object.related_published %}
-  <div class="nodetype-related">
+  <div class="attributetype-related">
     <h5>{% trans "Related node types" %}</h5>
     <ul>
-      {% for nodetype in object.related_published %}
+      {% for attributetype in object.related_published %}
       <li>
-	<a href="{{ nodetype.get_absolute_url }}" title="{{ nodetype.title }}" rel="bookmark">{{ nodetype.title }}</a>
+	<a href="{{ attributetype.get_absolute_url }}" title="{{ attributetype.title }}" rel="bookmark">{{ attributetype.title }}</a>
       </li>
       {% endfor %}
     </ul>
@@ -186,7 +152,7 @@
 </div>
 {% endblock %}
 
-{% block nodetype-comments %}
+{% block attributetype-comments %}
 <div id="comments" class="span-16 last">
   <h5>{% trans "Comments" %}</h5>
   {% with object.comments as comment_list %}
@@ -227,7 +193,7 @@
 </div>
 {% endblock %}
 
-{% block nodetype-pingbacks %}
+{% block attributetype-pingbacks %}
 <div id="pingbacks" class="span-16 last">
   <h5>{% trans "Pingbacks" %}</h5>
   {% with object.pingbacks as pingback_list %}
@@ -259,7 +225,7 @@
 </div>
 {% endblock %}
 
-{% block nodetype-trackbacks %}
+{% block attributetype-trackbacks %}
 {% with object.trackbacks as trackback_list %}
 {% if trackback_list.count or object.pingback_enabled %}
 <div id="trackbacks" class="span-16 last">
@@ -285,7 +251,7 @@
   {% endif %}
     {% if object.pingback_enabled %}
   <p>
-    <a href="{% url gstudio_nodetype_trackback object.pk %}" rel="trackback">
+    <a href="{% url gstudio_attributetype_trackback object.pk %}" rel="trackback">
       {% trans "Trackback URL" %}</a>
   </p>
     {% endif %}
@@ -294,7 +260,7 @@
 {% endwith %}
 {% endblock %}
 
-{% block nodetype-comments-form %}
+{% block attributetype-comments-form %}
 {% if object.comments_are_open %}
 <div class="commentForm span-16 last">
   {% render_comment_form for object %}
@@ -305,9 +271,9 @@
 {% endblock %}
 
 {% block admin_tools %}
-{% if perms.gstudio.change_nodetype %}
+{% if perms.gstudio.change_attributetype %}
 <li>
-  <a href="{% url admin:gstudio_objecttype_change object.pk %}" title="{% trans "Edit the nodetype" %}">
+  <a href="{% url admin:gstudio_objecttype_change object.pk %}" title="{% trans "Edit the attributetype" %}">
     {% trans "Edit the node type" %}
   </a>
 </li>
