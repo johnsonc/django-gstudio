@@ -30,6 +30,7 @@ from gstudio.models import Systemtype
 from gstudio.models import Processtype
 from gstudio.models import Attribute
 from gstudio.models import Relation
+from gstudio.models import Author
 
 import reversion
 from objectapp.settings import UPLOAD_TO
@@ -47,7 +48,7 @@ from objectapp.url_shortener import get_url_shortener
 from objectapp.signals import ping_directories_handler
 from objectapp.signals import ping_external_urls_handler
 
-
+'''
 class Author(User):
     """Proxy Model around User"""
 
@@ -58,14 +59,16 @@ class Author(User):
         """Return only the gbobjects published"""
         return gbobjects_published(self.gbobjects)
 
-    @models.permalink
+    #@models.permalink
     def get_absolute_url(self):
         """Return author's URL"""
-        return ('objectapp_author_detail', (self.username,))
+        return "/authors/%s/" %(self.username)
+        #return ('objectapp_author_detail', (self.username,))
 
     class Meta:
         """Author's Meta"""
         proxy = True
+'''
 
 
 class Gbobject(Node):
@@ -217,7 +220,27 @@ class Gbobject(Node):
         # encapsulate the dictionary with its node name as key
         return nbh
 
-
+    @property
+    def get_relations1(self):
+        """
+        Returns all the relations of the nodetype
+        """
+        relations={}
+        
+        left_relations=Relation.objects.filter(left_subject=self.id)
+        if left_relations:    
+            for each in left_relations:
+                relation=each.relationtype.title
+                predicate=each.right_subject
+                relations[relation]=predicate
+        
+        right_relations=Relation.objects.filter(right_subject=self.id)
+        if right_relations:    
+            for each in right_relations:
+                relation=each.relationtype.inverse
+                predicate=each.left_subject
+                relations[relation]=predicate
+        return relations
     @property
     def get_rendered_nbh(self):
         """ 
@@ -227,13 +250,24 @@ class Gbobject(Node):
         nbh = {}
         nbh['title'] = self.title        
         nbh['altnames'] = self.altnames                
-        nbh['plural'] = self.plural
         nbh['content'] = self.content
         #return  all OTs the object is linked to
-        member_of_list = []
+        member_of_dict = {}
         for each in self.objecttypes.all():
-            member_of_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title)) 
-        nbh['member_of'] = member_of_list
+            member_of_dict[each.title]= each.get_absolute_url()
+        nbh['member_of']=member_of_dict
+        #get Relations
+        relns={}
+        relnvalue={}
+        if self.get_relations1:
+            NTrelns=self.get_relations1
+            for value in NTrelns:
+                relnvalue[NTrelns[value].title]=NTrelns[value].ref.get_absolute_url()
+                relns[value]=relnvalue
+        nbh['relations']=relns
+        #get Attributes
+        attributes = self.subject_of.all()
+        nbh['attributes']=attributes 
 
         return nbh
 

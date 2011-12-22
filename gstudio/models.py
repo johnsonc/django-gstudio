@@ -109,10 +109,11 @@ class Author(User):
         """Return only the nodetypes published"""
         return nodetypes_published(self.nodetypes)
 
-    @models.permalink
+    #@models.permalink
     def get_absolute_url(self):
         """Return author's URL"""
-        return ('gstudio_author_detail', (self.username,))
+        return "/authors/%s/" %(self.username) 
+        #return ('gstudio_author_detail', (self.username,))
 
     class Meta:
         """Author's Meta"""
@@ -131,6 +132,15 @@ class NID(models.Model):
         """
         return self.__dict__
 
+    @models.permalink
+    def get_absolute_url(self):
+        """Return nodetype's URL"""
+        
+        return ('gstudio_nodetype_detail', (), {
+            'year': self.creation_date.strftime('%Y'),
+            'month': self.creation_date.strftime('%m'),
+            'day': self.creation_date.strftime('%d'),
+            'slug': self.slug})
 
     @property
     def ref(self):
@@ -398,6 +408,28 @@ class Nodetype(Node):
             return linebreaks(self.content)
         return self.content
     @property
+    def get_relations(self):
+        """
+        Returns all the relations of the nodetype
+        """
+        relations={}
+        
+        left_relations=Relation.objects.filter(left_subject=self.id)
+        if left_relations:    
+            for each in left_relations:
+                relation=each.relationtype.title
+                predicate=each.right_subject
+                relations[relation]=predicate
+        
+        right_relations=Relation.objects.filter(right_subject=self.id)
+        if right_relations:    
+            for each in right_relations:
+                relation=each.relationtype.inverse
+                predicate=each.left_subject
+                relations[relation]=predicate
+        return relations
+
+    @property
     def get_rendered_nbh(self):
         """          
         Returns the neighbourhood of the nodetype
@@ -405,24 +437,23 @@ class Nodetype(Node):
         nbh = {}
         nbh['title'] = self.title
         nbh['altnames'] = self.altnames
-        nbh['plural'] = self.plural
-        #get all MTs
+        nbh['plural'] = self.plural        
+        #get all MTs 
         member_of_dict = {}
         for each in self.metatypes.all():
             member_of_dict[each.title]= each.get_absolute_url()
         nbh['member_of_metatypes']=member_of_dict
-        #get parents
         typeof={}
-        par=self.parent
-        if par:
-            typeof[par] = par.get_absolute_url()
+        parent=self.parent
+        if parent:
+            typeof[parent] = parent.get_absolute_url()
         nbh['type_of']=typeof
-        #get all subtypes
+        #get all subtypes 
         subtypes={}
         for each in Nodetype.objects.filter(parent=self.id):
             subtypes[each.title] =each.get_absolute_url()
-        nbh['contains_subtypes']=subtypes
-        # get all the objects as members of this OT
+        nbh['contains_subtypes']=subtypes   
+        # get all the objects inheriting this OT 
         contains_members_dict = {}
         for each in self.member_objects.all():
            contains_members_dict[each.title]= each.get_absolute_url()
@@ -448,12 +479,14 @@ class Nodetype(Node):
             siblings[each.title]=each.get_absolute_url()
         nbh['siblings']=siblings
         #get Relations
-        relations = {}
-        for each in self.left_subject_of.all():
-            reltypes[each.title]=each.get_absolute_url()
-        for each in self.right_subject_of.all():
-            reltypes[each.title]=each.get_absolute_url()
-        nbh['relations']=relations
+        relns={}
+        relnvalue={}
+        if self.get_relations:
+            NTrelns=self.get_relations
+            for value in NTrelns:
+                relnvalue[NTrelns[value].title]=NTrelns[value].ref.get_absolute_url()
+                relns[value]=relnvalue
+        nbh['relations']=relns
         #get Attributes
         attributes = self.subject_of.all()
         nbh['attributes']=attributes
@@ -463,15 +496,16 @@ class Nodetype(Node):
             attributetypes[each.title]=each.get_absolute_url()
         nbh['ats']=attributetypes
         #get RTs as leftroles and rightroles
-        leftroles = {}
+        leftroles = {} 
         for each in self.left_subjecttype_of.all():
             leftroles[each.title]=each.get_absolute_url()
         nbh['leftroles']=leftroles
-        rightroles = {}
+        rightroles = {} 
         for each in self.right_subjecttype_of.all():
             rightroles[each.title]=each.get_absolute_url()
         nbh['rightroles']=rightroles
-        return nbh 
+        return nbh
+       
  
     @property
     def previous_nodetype(self):
