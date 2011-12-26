@@ -104,11 +104,7 @@ class Gbobject(Node):
     objecttypes = models.ManyToManyField(Nodetype, verbose_name=_('member of'),
                                         related_name='member_objects',
                                         blank=True, null=True)
-
-    slug = models.SlugField(help_text=_('used for publication'),
-                            unique_for_date='creation_date',
-                            max_length=255)
-
+  
 
     authors = models.ManyToManyField(User, verbose_name=_('authors'),
                                      related_name='gbobjects',
@@ -119,9 +115,7 @@ class Gbobject(Node):
     comment_enabled = models.BooleanField(_('comment enabled'), default=True)
     pingback_enabled = models.BooleanField(_('linkback enabled'), default=True)
 
-    creation_date = models.DateTimeField(_('creation date'),
-                                         default=datetime.now)
-    last_update = models.DateTimeField(_('last update'), default=datetime.now)
+        
     start_publication = models.DateTimeField(_('start publication'),
                                              help_text=_('date start publish'),
                                              default=datetime.now)
@@ -250,6 +244,7 @@ class Gbobject(Node):
         nbh = {}
         nbh['title'] = self.title        
         nbh['altnames'] = self.altnames                
+        nbh['plural']=self.plural
         nbh['content'] = self.content
         #return  all OTs the object is linked to
         member_of_dict = {}
@@ -266,9 +261,10 @@ class Gbobject(Node):
                 relns[value]=relnvalue
         nbh['relations']=relns
         #get Attributes
-        attributes = self.subject_of.all()
-        nbh['attributes']=attributes 
-
+        attributes ={}
+        for each in self.subject_of.all():
+             attributes[each.attributetype]=each.svalue 
+        nbh['attributes']=attributes
         return nbh
 
 

@@ -40,7 +40,6 @@
 
                            <b>Name: </b> {{ object.title }} <br/>
                            
-                           
 			   {% if object.get_rendered_nbh.plural %}
                                 <b> Plural Name :<nbsp></b>
                                          {{object.get_rendered_nbh.plural}} <br/>
@@ -102,7 +101,10 @@
 				   <b>Siblings: <nbsp> </b>
                                 
 				    {% for sibkey,sibvalue in object.get_rendered_nbh.siblings.items %}
+                                             {{sibkey}};
+                                      <!--
                                         <a href="{{sibvalue}}">{{sibkey}}</a>;	      
+                                       -->
 				    {% endfor %}       <br/>
 	                   {% endif %}
                             
@@ -175,6 +177,8 @@
                                         <a href="{{atvalue}}">{{atkey}}</a>;	      
 				    {% endfor %}       <br/>
 	                   {% endif %}
+                           
+			  
                            
                                     
 

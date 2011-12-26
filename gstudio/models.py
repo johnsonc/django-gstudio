@@ -109,11 +109,11 @@ class Author(User):
         """Return only the nodetypes published"""
         return nodetypes_published(self.nodetypes)
 
-    #@models.permalink
+    @models.permalink
     def get_absolute_url(self):
         """Return author's URL"""
-        return "/authors/%s/" %(self.username) 
-        #return ('gstudio_author_detail', (self.username,))
+        #return "/authors/%s/" %(self.username) 
+        return ('gstudio_author_detail', (self.username,))
 
     class Meta:
         """Author's Meta"""
@@ -124,7 +124,15 @@ class NID(models.Model):
     the network, including edges.  Edges are also first class citizens
     in the gnowledge base. """
 
+    creation_date = models.DateTimeField(_('creation date'),
+                                         default=datetime.now)
+    
+    slug = models.SlugField(help_text=_('used for publication'),
+                            unique_for_date='creation_date',
+                            max_length=255)
+
     title = models.CharField(_('title'), help_text=_('give a name to the node'), max_length=255)
+    last_update = models.DateTimeField(_('last update'), default=datetime.now)
 
     def get_serialized_dict(self):
         """
@@ -212,7 +220,7 @@ class Metatype(Node):
     Metatype object for Nodetype
     """
 
-    slug = models.SlugField(help_text=_('used for publication'), unique=True, max_length=255)
+    
     description = models.TextField(_('description'), blank=True, null=True)
     parent = models.ForeignKey('self', null=True, blank=True, verbose_name=_('parent metatype'), related_name='children')
 
@@ -337,9 +345,7 @@ class Nodetype(Node):
                                         related_name='member_types',
                                         blank=True, null=True)
 
-    slug = models.SlugField(help_text=_('used for publication'),
-                            unique_for_date='creation_date',
-                            max_length=255)
+    
 
     authors = models.ManyToManyField(User, verbose_name=_('authors'),
                                      related_name='nodetypes',
@@ -351,9 +357,8 @@ class Nodetype(Node):
     comment_enabled = models.BooleanField(_('comment enabled'), default=True)
     pingback_enabled = models.BooleanField(_('linkback enabled'), default=True)
 
-    creation_date = models.DateTimeField(_('creation date'),
-                                         default=datetime.now)
-    last_update = models.DateTimeField(_('last update'), default=datetime.now)
+    
+    
     start_publication = models.DateTimeField(_('start publication'),
                                              help_text=_('date start publish'),
                                              default=datetime.now)
