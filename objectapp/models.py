@@ -158,8 +158,8 @@ class Gbobject(Node):
         # 3. For each RT, create a dict key and a value as a dict. And add the relation as a new key-value pair (rid:subject).
         # 4. If self is in right value, then add inverse relation as RT and add the relation as a new key-value pair (rid:subject).
 
-        left_relset = Relation.objects.filter(subject1=self.id) 
-        right_relset = Relation.objects.filter(subject2=self.id) 
+        left_relset = Relation.objects.filter(left_subject=self.id) 
+        right_relset = Relation.objects.filter(right_subject=self.id) 
         
         #return left_relset + right_relset
 
@@ -193,7 +193,7 @@ class Gbobject(Node):
 
     def get_attributes(self):
         attributes =  {}
-        for attribute in self.subject_gbnode.all(): #Attribute.objects.filter(subject=self.id):
+        for attribute in Attribute.objects.filter(subject=self.id):
             for key,value in attribute.edge_node_dict.iteritems():
                 attributes[key]= value
                 

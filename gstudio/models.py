@@ -138,7 +138,10 @@ class NID(models.Model):
         Returns the object reference the id belongs to.
         """
         try:
-            """                                                                                                                                                         ALGO:     get object id, go to version model, return for the given id.                                                                                      """
+            """ 
+            ALGO:     get object id, go to version model, return for the given id.
+            """
+
             # Retrieving only the relevant tupleset for the versioned objects
             vrs = Version.objects.filter(type=0 , object_id=self.id)
             # Returned value is a list, so splice it.                                                                                                     
@@ -737,6 +740,40 @@ class Objecttype(Nodetype):
     def __unicode__(self):
         return self.title
 
+    def get_graph_json(self):
+
+        import networkx as nx
+        import d3
+        import json
+
+        nbh = self.get_nbh
+        
+        G = nx.DiGraph()
+        
+        G.add_node(self.title, uri=self.get_absolute_url())
+        
+        for key in nbh.keys():
+            # check if its not null or empty 
+            if nbh[key]:
+                # check if not a string(is list)
+                if not isinstance(nbh[key],basestring):                
+                    for item in nbh[key]:
+                        
+                        try:
+                            if item.title:
+                                G.add_node(item.title, uri=item.get_absolute_url())
+                                G.add_edge(self.title, item.title,name=key)
+                            elif item.username and item.get_absolute_url():
+                                G.add_node(item.username, uri=item.get_absolute_url())
+                                G.add_edge(self.title, item.username,name=key)
+                        except:
+                            pass
+                # is a string
+                else: 
+                    G.node[self.title][str(key)]=nbh[key]
+                               
+        return G #d3.json_graph.node_link_data(G) 
+                    
     @property
     def get_attributetypes(self):        
         return self.subjecttype_of.all()
@@ -820,7 +857,7 @@ class Objecttype(Nodetype):
         nbh['plural'] = self.plural        
         nbh['member_of_metatype'] = self.metatypes.all()
         # get all the ATs for the objecttype
-        nbh.update(self.get_attributetypes) 
+        nbh['subjecttype_of']= self.subjecttype_of.all() 
         # get all the RTs for the objecttype        
         nbh.update(self.get_relationtypes) 
 
@@ -828,7 +865,7 @@ class Objecttype(Nodetype):
 
         nbh['contains_subtypes'] = Nodetype.objects.filter(parent=self.id)
         # get all the objects inheriting this OT 
-        nbh['contains_members'] = self.gbobjects.all()
+        nbh['contains_members'] = self.member_objects.all()
 
         nbh['prior_nodes'] = self.prior_nodes.all()             
 
@@ -853,10 +890,18 @@ class Objecttype(Nodetype):
             member_of_metatypes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
         nbh['member_of_metatypes'] = member_of_metatypes_list
 
-        nbh.update(self.get_attributetypes)
+
+        attributetypes_list = []
+        for each in self.get_attributetypes:
+           attributetypes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['attributetypes'] = attributetypes_list
+
 
         # get all the RTs for the objecttype
-        nbh.update(self.get_relationtypes)
+        reltypes_list = []
+        for each in self.get_relationtypes:
+           reltypes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['relationtypes'] = reltypes_list
 
         nbh['type_of'] = self.parent
 

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>d3.js ~ Force-Directed Graph</title>
+
+  <link rel="stylesheet" href="/static/gstudio/css/jquery-ui.css" type="text/css" media="all">
+
+  <style type="text/css">
+    svg {
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+    }
+    .link {
+      stroke : #ccc;
+    }
+
+    .nodetext {
+      pointer-events : none;
+      font           : 10px sans-serif;
+    }
+  </style>
+  
+  
+</head>
+
+
+<body marginwidth="0" marginheight="0">
+<div class="body">
+  <div class="content">
+ 
+ 
+    <div id="relation_type" class="ui-buttonset">
+            <span>Relation type:</span>
+            <input checked="checked" value="follows" type="radio" id="follows" name="radio" class="ui-helper-hidden-accessible"><label for="follows" class="ui-button ui-widget ui-state-default ui-button-text-only ui-corner-left" aria-pressed="false" role="button" aria-disabled="false"><span class="ui-button-text">Followers</span></label>
+            <input value="mentions" type="radio" id="mentions" name="radio" class="ui-helper-hidden-accessible"><label for="mentions" aria-pressed="true" class="ui-button ui-widget ui-state-default ui-button-text-only ui-corner-right ui-state-active" role="button" aria-disabled="false"><span class="ui-button-text">Mentions</span></label>
+            <!-- <input value="hashtags" type="radio" id="hashtags" name="radio"/><label for="hashtags">Shared interests</label> -->
+          </div>
+          
+    <div id="chart"><svg width="960" height="700" style="opacity: 1; ">
+<!--
+<body>
+<div class="body">
+  <div class="content">
+ 
+ 
+    <div id="relation_type">
+            <span>Relation type:</span>
+            <input checked="checked" value="follows" type="radio" id="follows" name="radio"/><label for="follows">Followers</label>
+            <input value="mentions" type="radio" id="mentions" name="radio"/><label for="mentions">Mentions</label>
+            <!-- <input value="hashtags" type="radio" id="hashtags" name="radio"/><label for="hashtags">Shared interests</label> 
+
+
+          </div>
+-->          
+   </div>
+
+
+<!--
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" ></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js" ></script>    
+
+    <script type="text/javascript" src="http://documentcloud.github.com/underscore/underscore.js" ></script>
+
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js"></script>
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.layout.js"></script>
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.geom.js"></script>
+-->
+
+    <script type="text/javascript" src="/static/gstudio/js/jquery.min.js" ></script>
+    <script type="text/javascript" src="/static/gstudio/js/jquery-ui.js" ></script>    
+
+    <script type="text/javascript" src="/static/gstudio/js/underscore.js" ></script>
+
+    <script type="text/javascript" src="/static/gstudio/js/d3.js"></script>
+    <script type="text/javascript" src="/static/gstudio/js/d3.layout.js"></script>
+    <script type="text/javascript" src="/static/gstudio/js/d3.geom.js"></script>
+    <script type="text/javascript" src="/static/gstudio/js/force.js"></script>
+
+  </div>
+
+</div>
+</body>
+</html> 
