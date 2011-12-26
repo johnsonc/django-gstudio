@@ -4,6 +4,7 @@ import os
 gettext = lambda s: s
 
 DEBUG = True
+TEMPLATE_DEBUG78 = True
 
 DATABASES = {'default':
              {'ENGINE': 'django.db.backends.sqlite3',
@@ -106,7 +107,11 @@ INSTALLED_APPS = (
     'registration',
     'graphviz',
     'demo',
+    'south',
     )
+
+
+
 
 from gstudio.xmlrpc import GSTUDIO_XMLRPC_METHODS
 XMLRPC_METHODS = GSTUDIO_XMLRPC_METHODS
