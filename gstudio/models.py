@@ -108,6 +108,10 @@ class Author(User):
     def nodetypes_published(self):
         """Return only the nodetypes published"""
         return nodetypes_published(self.nodetypes)
+    
+    @property
+    def title(self):
+        return self.username
 
     @models.permalink
     def get_absolute_url(self):
@@ -861,31 +865,78 @@ class Objecttype(Nodetype):
 
         nbh = self.get_nbh
         
-        G = nx.DiGraph()
-        
-        G.add_node(self.title, uri=self.get_absolute_url())
-        
+        g_json = {}
+        #g_json['RT']=[{'from':'%s' , 'to':'%s'}]
+        g_json['node_metadata']= [{'_id':str(self.id),'title':self.title, 'url':self.get_absolute_url()}]
+
+
         for key in nbh.keys():
             # check if its not null or empty 
             if nbh[key]:
                 # check if not a string(is list)
-                if not isinstance(nbh[key],basestring):                
-                    for item in nbh[key]:
-                        
+                if not isinstance(nbh[key],basestring): 
+                    #iterate thru each element in list
+                    for item in nbh[key]:                        
                         try:
-                            if item.title:
-                                G.add_node(item.title, uri=item.get_absolute_url())
-                                G.add_edge(self.title, item.title,name=key)
-                            elif item.username and item.get_absolute_url():
-                                G.add_node(item.username, uri=item.get_absolute_url())
-                                G.add_edge(self.title, item.username,name=key)
+                            if item.__dict__.has_key('title'):
+                                g_json['node_metadata'].append({'_id':str(item.id),'title':item.title, 'url':item.get_absolute_url()})
+                              #G.add_node(item.title, uri=item.get_absolute_url())
+                                #G.add_edge(self.title, item.title,name=key)
+                            elif item.__dict__.has_key('username'):
+                                g_json['node_metadata'].append({'_id':str(this_node.id),'ref':this_node._meta.object_name, 'title':item.username})
+                                #G.add_node(item.username, uri=item.get_absolute_url())
+                                #G.add_edge(self.title, item.username,name=key)
                         except:
                             pass
                 # is a string
                 else: 
-                    G.node[self.title][str(key)]=nbh[key]
+                    pass
+                    #g_json['node_metadata'][self.title][str(key)]=nbh[key]
                                
-        return G #d3.json_graph.node_link_data(G) 
+        return g_json #d3.json_graph.node_link_data(G) 
+
+
+
+    # def get_graph_json(self):
+
+    #     import networkx as nx
+    #     import d3
+    #     import json
+
+    #     nbh = self.get_nbh
+        
+    #     G = nx.DiGraph()
+        
+    #     G.add_node(self.title, uri=self.get_absolute_url())
+        
+    #     
+    #     
+    #     
+
+    #     for key in nbh.keys():
+    #         # check if its not null or empty 
+    #         if nbh[key]:
+    #             # check if not a string(is list)
+    #             if not isinstance(nbh[key],basestring):                
+    #                 for item in nbh[key]:
+                        
+    #                     try:
+    #                         if item.__dict__.has_key('title'):
+    #     
+    #                           G.add_node(item.title, uri=item.get_absolute_url())
+    #                           G.add_edge(self.title, item.title,name=key)
+    #                         elif item.__dict__.has_key('username'):
+    #                            G.add_node(item.username, uri=item.get_absolute_url())
+    #                            G.add_edge(self.title, item.username,name=key)
+    #                     except:
+    #                         pass
+    #             # is a string
+    #             else: 
+    #                 G.node[self.title][str(key)]=nbh[key]
+                               
+    #     return G #d3.json_graph.node_link_data(G) 
+
+
                     
     @property
     def get_attributetypes(self):        
@@ -974,7 +1025,7 @@ class Objecttype(Nodetype):
         # get all the RTs for the objecttype        
         nbh.update(self.get_relationtypes) 
 
-        nbh['type_of'] = self.parent
+        nbh['type_of'] = [self.parent]
 
         nbh['contains_subtypes'] = Nodetype.objects.filter(parent=self.id)
         # get all the objects inheriting this OT 
@@ -987,7 +1038,11 @@ class Objecttype(Nodetype):
 	nbh['authors'] = self.authors.all()
 
 	return nbh
-
+    
+    @property
+    def get_nbh_graph(self):
+        nbh = self.get_nbh
+        
 
     @property
     def get_rendered_nbh(self):
