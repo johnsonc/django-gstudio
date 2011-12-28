@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
-  <title>d3.js ~ Force-Directed Graph</title>
+  <title>Objecttype Force-Directed Graph</title>
 
   <link rel="stylesheet" href="/static/gstudio/css/jquery-ui.css" type="text/css" media="all">
 
@@ -38,15 +38,9 @@
             <!-- <input value="hashtags" type="radio" id="hashtags" name="radio"/><label for="hashtags">Shared interests</label> -->
           </div>
           
-    <div id="chart"><svg width="960" height="700" style="opacity: 1; ">
+    <div id="chart"><svg width="960" height="500" style="opacity: 1; ">
    </div>
 
-
-<div id='debug2' class='debug2'>
-        <input type='text' id='debugbox1'  value=''> </input>
-        <input type='text' id='debugbox2'  value=''> </input>
-        <input type='text' id='debugbox3'  value=''> </input>
-</div>
 
     <script type="text/javascript" src="/static/gstudio/js/jquery.min.js" ></script>
     <script type="text/javascript" src="/static/gstudio/js/jquery-ui.js" ></script>    
@@ -58,12 +52,12 @@
     <script type="text/javascript" src="/static/gstudio/js/d3.geom.js"></script>
 <!--    <script type="text/javascript" src="/static/gstudio/js/force.js"></script>
 
-Javascript for force graph
+Javascript for Object type force graph
 -->
    <script type="text/javascript" >
 
     var w = 960,
-        h = 700,
+        h = 500,
         fill = d3.scale.category20();
 
     var vis = d3.select("#chart")
@@ -90,7 +84,7 @@ $(function() {
         return acc;
       }, {});
 								       
-      var member_of_metatype = _(json.member_of_metatype).chain().map(function(e) {
+       member_of_metatype = _(json.member_of_metatype).chain().map(function(e) {
         e.source = nodes_by_id[e.from];
         e.target = nodes_by_id[e.to];
         e.type = 'member_of_metatype';
@@ -99,7 +93,7 @@ $(function() {
         return nodes_by_id[e.from] && nodes_by_id[e.to]
       }).value();
       		
-      var contains_subtypes = _(json.contains_subtypes).chain().map(function(e) {
+       contains_subtypes = _(json.contains_subtypes).chain().map(function(e) {
         e.source = nodes_by_id[e.from];
         e.target = nodes_by_id[e.to];
         e.type = 'contains_subtypes';
@@ -108,10 +102,49 @@ $(function() {
         return nodes_by_id[e.from] && nodes_by_id[e.to]
       }).value();
       
-      var contains_members = _(json.contains_members).chain().map(function(e) {
+       contains_members = _(json.contains_members).chain().map(function(e) {
         e.source = nodes_by_id[e.from];
         e.target = nodes_by_id[e.to];
         e.type = 'contains_members';
+        return e;
+      }).filter(function(e){
+        return nodes_by_id[e.from] && nodes_by_id[e.to]
+      }).value();
+      
+
+       left_subjecttype_of  = _(json.left_subjecttype_of).chain().map(function(e) {
+        e.source = nodes_by_id[e.from];
+        e.target = nodes_by_id[e.to];
+        e.type = 'left_subjecttype_of';
+        return e;
+      }).filter(function(e){
+        return nodes_by_id[e.from] && nodes_by_id[e.to]
+      }).value();
+      
+
+       subjecttype_of = _(json.subjecttype_of).chain().map(function(e) {
+        e.source = nodes_by_id[e.from];
+        e.target = nodes_by_id[e.to];
+        e.type = 'subjecttype_of';
+        return e;
+      }).filter(function(e){
+        return nodes_by_id[e.from] && nodes_by_id[e.to]
+      }).value();
+      
+        type_of = _(json.type_of).chain().map(function(e) {
+        e.source = nodes_by_id[e.from];
+        e.target = nodes_by_id[e.to];
+        e.type = 'type_of';
+        return e;
+      }).filter(function(e){
+        return nodes_by_id[e.from] && nodes_by_id[e.to]
+      }).value();
+      
+      
+       right_subjecttype_of = _(json.right_subjecttype_of).chain().map(function(e) {
+        e.source = nodes_by_id[e.from];
+        e.target = nodes_by_id[e.to];
+        e.type = 'right_subjecttype_of';
         return e;
       }).filter(function(e){
         return nodes_by_id[e.from] && nodes_by_id[e.to]
@@ -128,7 +161,7 @@ $(function() {
       }).value();
       
 
-      var mentions_edges = _(json.is_mentioned_by).chain().map(function(e) {
+       mentions_edges = _(json.is_mentioned_by).chain().map(function(e) {
         e.source = nodes_by_id[e.from];
         e.target = nodes_by_id[e.to];
         e.type = 'mentions_edges';
@@ -142,7 +175,7 @@ $(function() {
 	nodes_by_id[{{ node_id }}].y = h/2.0;
       
        all_edges = new Array();
-       all_edges = all_edges.concat(follows_edges, member_of_metatype, contains_members, contains_subtypes, mentions_edges); 
+	all_edges = all_edges.concat(follows_edges, member_of_metatype, contains_members, contains_subtypes, mentions_edges, right_subjecttype_of, left_subjecttype_of, subjecttype_of, type_of); 
 	/* all_edges.concat(follows_edges); 
          all_edges.concat(member_of_metatype); 
          all_edges.concat(contains_members);

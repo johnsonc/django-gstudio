@@ -617,7 +617,7 @@ class Nodetype(Node):
                         try:
                             if item.__dict__.has_key("title"):
                                 # add node
-                                g_json["node_metadata"].append({"_id":str(item.id),"screen_name":self.title, "title":item.title, "url":item.get_absolute_url()})
+                                g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
                                 # add edge
                                 g_json[str(key)].append({"from":self.id , "to":item.id ,"value":1  })
                             elif item.__dict__.has_key("username"):
