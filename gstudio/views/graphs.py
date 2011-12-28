@@ -7,13 +7,10 @@ from gstudio.gnowql import *
 #import networkx as nx
 #import d3 
 import json
-from os.path import join
+import os
  
 from gstudio.views.decorators import protect_nodetype
 from gstudio.views.decorators import update_queryset
-
-
-
 
 def graph_json(request, node_id): 
 
