@@ -12,6 +12,7 @@ from gstudio.sitemaps import AuthorSitemap
 from objectapp.sitemaps import GbobjectSitemap
 
 
+
 admin.autodiscover()
 handler500 = 'demo.views.server_error'
 handler404 = 'django.views.defaults.page_not_found'

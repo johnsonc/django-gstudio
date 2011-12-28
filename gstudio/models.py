@@ -124,6 +124,8 @@ class NID(models.Model):
     the network, including edges.  Edges are also first class citizens
     in the gnowledge base. """
 
+    title = models.CharField(_('title'), help_text=_('give a name to the node'), max_length=255)
+    last_update = models.DateTimeField(_('last update'), default=datetime.now)
     creation_date = models.DateTimeField(_('creation date'),
                                          default=datetime.now)
     
@@ -131,8 +133,6 @@ class NID(models.Model):
                             unique_for_date='creation_date',
                             max_length=255)
 
-    title = models.CharField(_('title'), help_text=_('give a name to the node'), max_length=255)
-    last_update = models.DateTimeField(_('last update'), default=datetime.now)
 
     def get_serialized_dict(self):
         """

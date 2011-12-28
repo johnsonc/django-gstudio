@@ -1,3 +1,2 @@
-demo
 gstudio
 objectapp

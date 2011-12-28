@@ -253,10 +253,11 @@ class Gbobject(Node):
         nbh['member_of']=member_of_dict
         #get Relations
         relns={}
-        relnvalue={}
+
         if self.get_relations1:
             NTrelns=self.get_relations1
             for value in NTrelns:
+                relnvalue={}
                 relnvalue[NTrelns[value].title]=NTrelns[value].ref.get_absolute_url()
                 relns[value]=relnvalue
         nbh['relations']=relns
