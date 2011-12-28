@@ -16,6 +16,7 @@ from gstudio.models import NodeSpecification
 from gstudio.models import Union
 from gstudio.models import Complement
 from gstudio.models import Intersection
+from gstudio.models import Expression
 from gstudio.models import AttributeCharField
 from gstudio.models import AttributeTextField
 from gstudio.models import AttributeIntegerField
@@ -50,6 +51,7 @@ from gstudio.admin.nodespecification import NodeSpecificationAdmin
 from gstudio.admin.union import UnionAdmin
 from gstudio.admin.complement import ComplementAdmin
 from gstudio.admin.intersection import IntersectionAdmin 
+from gstudio.admin.expression import ExpressionAdmin 
 from gstudio.admin.systemtype import SystemtypeAdmin
 from gstudio.admin.processtype import ProcesstypeAdmin
 
@@ -92,6 +94,7 @@ admin.site.register(NodeSpecification, NodeSpecificationAdmin)
 admin.site.register(Union, UnionAdmin)
 admin.site.register(Complement, ComplementAdmin)
 admin.site.register(Intersection, IntersectionAdmin)
+admin.site.register(Expression, ExpressionAdmin)
 
 admin.site.register(AttributeCharField, AttributeCharFieldAdmin)
 admin.site.register(AttributeTextField, AttributeTextFieldAdmin)
@@ -112,23 +115,4 @@ admin.site.register(AttributeFilePathField, AttributeFilePathFieldAdmin)
 admin.site.register(AttributeImageField, AttributeImageFieldAdmin)
 admin.site.register(AttributeURLField, AttributeURLFieldAdmin)
 admin.site.register(AttributeIPAddressField, AttributeIPAddressFieldAdmin)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

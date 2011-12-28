@@ -20,6 +20,7 @@ from gstudio.models import NodeSpecification
 from gstudio.models import Union
 from gstudio.models import Complement
 from gstudio.models import Intersection
+from gstudio.models import Expression
 
 from gstudio.models import AttributeCharField
 from gstudio.models import AttributeTextField
@@ -419,6 +420,11 @@ class ComplementAdminForm(forms.ModelForm):
 class IntersectionAdminForm(forms.ModelForm):
     class Meta:
         model = Intersection
+
+
+class ExpressionAdminForm(forms.ModelForm):
+    class Meta:
+        model = Expression
 
 ### Datatypes here ###
 

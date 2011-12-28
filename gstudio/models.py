@@ -1333,6 +1333,34 @@ class NodeSpecification(Node):
                        ('can_change_author', 'Can change author'), )
 
 
+class Expression(Node):
+    """
+    Expression constructor
+    """
+
+    left_term = models.ForeignKey(NID, related_name="left_term_of", verbose_name='left term name') 
+    relationtype = models.ForeignKey(Relationtype, verbose_name='relation name')
+    right_term = models.ForeignKey(NID, related_name="right_term_of", verbose_name='right term name') 
+
+
+    def __unicode__(self):
+        return self.composed_sentence
+
+    @property
+    def composed_sentence(self):
+        "composes the relation as a sentence in a triple format."
+        return '%s %s %s' % (self.left_term, self.relationtype, self.right_term)
+
+
+    class Meta:
+        unique_together = (('left_term','relationtype','right_term'),)
+        verbose_name = _('expression')
+        verbose_name_plural = _('expressionss')
+        permissions = (('can_view_all', 'Can view all'),
+                       ('can_change_author', 'Can change author'), )
+
+
+
 class Union(Node):
     """
     union of two classes
@@ -1341,6 +1369,8 @@ class Union(Node):
         
     def __unicode__(self):
         return self.title
+
+
 
 class Complement(Node):
     """
