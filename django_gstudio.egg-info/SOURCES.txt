@@ -552,6 +552,7 @@ objectapp/static/objectapp/css/ie.css
 objectapp/static/objectapp/css/jquery.autocomplete.css
 objectapp/static/objectapp/css/print.css
 objectapp/static/objectapp/css/screen.css
+objectapp/static/objectapp/css/screen1.css
 objectapp/static/objectapp/css/slider.css
 objectapp/static/objectapp/css/wymeditor_styles.css
 objectapp/static/objectapp/css/src/_base.sass
