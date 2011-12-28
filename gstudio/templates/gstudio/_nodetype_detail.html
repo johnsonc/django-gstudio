@@ -1,5 +1,5 @@
 {% load tagging_tags comments i18n %}
-<div id="nodetype-{{ object.pk }}" class="objecttype{% if object.featured %} featured{% endif %} span-16 last">
+<div id="nodetype-{{ object.pk }}" class="hnodetype{% if object.featured %} featured{% endif %} span-16 last">
   <div class="nodetype-header span-16 last">
     <h3 class="nodetype-title">
       <a href="{{ object.get_absolute_url }}" title="{{ object.title }}" rel="bookmark">
@@ -96,7 +96,7 @@
 
 
     </p>
-  </div>
+  
 
 
   <div class="nodetype-body span-16 last">
@@ -171,4 +171,5 @@
       {% endwith %}
     </p>
   </div>
+</div>
 </div>

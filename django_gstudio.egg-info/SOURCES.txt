@@ -362,6 +362,7 @@ gstudio/templates/gstudio/_header.html
 gstudio/templates/gstudio/_nodetype_detail.html
 gstudio/templates/gstudio/_nodetype_neighbourhood.html
 gstudio/templates/gstudio/_subtype_detail.html
+gstudio/templates/gstudio/attributetype_detail.html
 gstudio/templates/gstudio/author_list.html
 gstudio/templates/gstudio/base.html
 gstudio/templates/gstudio/login.html
@@ -564,6 +565,7 @@ objectapp/static/objectapp/css/ie.css
 objectapp/static/objectapp/css/jquery.autocomplete.css
 objectapp/static/objectapp/css/print.css
 objectapp/static/objectapp/css/screen.css
+objectapp/static/objectapp/css/screen1.css
 objectapp/static/objectapp/css/slider.css
 objectapp/static/objectapp/css/wymeditor_styles.css
 objectapp/static/objectapp/css/src/_base.sass

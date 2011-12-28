@@ -29,51 +29,49 @@
 
              <b>Name: </b> {{ object.title }} <br/>
 
-	     {% if object.altnames %}
-	     <b>Alternate names: </b>
-	     {% endif %}
-	     {{ object.altnames }} <br/>		
+	     {% if object.get_rendered_nbh.plural %}
+                                <b> Plural Name :<nbsp></b>
+                                         {{object.get_rendered_nbh.plural}} <br/>
+                           {% endif %}
+                            {% if object.get_rendered_nbh.altnames %}
+                               <b> Alternate names :<nbsp></b>
+                                         {{object.get_rendered_nbh.altnames}} <br/>
+		           {% endif %}
+              
+              {% if object.get_rendered_nbh.member_of %}
+                           
+                          
+                                <b> Member of Objecttypes :<nbsp></b>
 
-             {% if object.plural %}
-	     <b>Plural Name: </b> {{ object.plural }} <br/>
-	     {% endif %} 
+                                    {% for mkey,mvalue in object.get_rendered_nbh.member_of.items %}
+                                        <a href="{{mvalue}}">{{mkey}}</a>;
+                                    {% endfor %}<br/>
+                           {% endif %}  
 
-
-	     {% if object.objecttypes.all %}
-	     <b>member of: </b> 
-	          {% for items in object.objecttypes.all %}
-	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
-	     {% endfor %} 	     <br/>
-	     {% endif %}
-
-
-	     {% if object.subject_gbnode.all %}
-	     <b>attributes: </b> 
-	          {% for items in object.subject_gbnode.all %}
-	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
-	     {% endfor %} 	     <br/>
-	     {% endif %}
-
-	     {% if object.subject1_gbnode.all %}
-	     <b>relations: </b> 
-	          {% for items in object.subject1_gbnode.all %}
-	     <a href="{{ items.subject1.get_absolute_url }}"> {{ items.title }}</a>; 
-	     {% endfor %}   	     <br/>
-	     {% endif %}
-
-	     {% if object.subject2_gbnode.all %}
-	     <b>relations: </b> 
-	          {% for items in object.subject2_gbnode.all %}
-	     <a href="{{ items.subject2.get_absolute_url }}"> {{ items.title }}</a>; 
-	     {% endfor %}   	     <br/>
-	     {% endif %}
+              {% if object.get_rendered_nbh.relations %}
+                         
+                         
+                                 {% for relkey,relvalue in object.get_rendered_nbh.relations.items %}
+                                          <b>{{relkey}}:<nbsp></b>
+					{% for relk, relv in relvalue.items %}
+					    <a href="{{relv}}">{{relk}}</a>;	      
+                                        {% endfor %}<br/>
+				 {% endfor %}      
+	                   {% endif %}
+                           
+                           {% if object.get_rendered_nbh.attributes %}
+                                                                                  				   
+                                
+				    {% for atkey,atvalue in object.get_rendered_nbh.attributes.items %}
+                                        <b>{{atkey}} : <nbsp></b>{{atvalue}};<br/>	      
+				    {% endfor %}    
+	                   {% endif %}
 
 
 	 
 
 
-  </div>
-
+  
   <div class="gbobject-body span-16 last">
     {% if object.image %}
     <div class="gbobject-image">
@@ -88,6 +86,7 @@
       {{ object_content }}
     </div>
   </div>
+
 
   <div class="gbobject-footer">
     <p class="gbobject-tags span-16 last">
@@ -142,4 +141,5 @@
       {% endwith %}
     </p>
   </div>
+</div>
 </div>

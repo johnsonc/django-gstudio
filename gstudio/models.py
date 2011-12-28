@@ -112,6 +112,7 @@ class Author(User):
     @models.permalink
     def get_absolute_url(self):
         """Return author's URL"""
+        #return "/authors/%s/" %(self.username) 
         return ('gstudio_author_detail', (self.username,))
 
     class Meta:
@@ -123,7 +124,15 @@ class NID(models.Model):
     the network, including edges.  Edges are also first class citizens
     in the gnowledge base. """
 
+    creation_date = models.DateTimeField(_('creation date'),
+                                         default=datetime.now)
+    
+    slug = models.SlugField(help_text=_('used for publication'),
+                            unique_for_date='creation_date',
+                            max_length=255)
+
     title = models.CharField(_('title'), help_text=_('give a name to the node'), max_length=255)
+    last_update = models.DateTimeField(_('last update'), default=datetime.now)
 
     def get_serialized_dict(self):
         """
@@ -131,6 +140,15 @@ class NID(models.Model):
         """
         return self.__dict__
 
+    @models.permalink
+    def get_absolute_url(self):
+        """Return nodetype's URL"""
+        
+        return ('gstudio_nodetype_detail', (), {
+            'year': self.creation_date.strftime('%Y'),
+            'month': self.creation_date.strftime('%m'),
+            'day': self.creation_date.strftime('%d'),
+            'slug': self.slug})
 
     @property
     def ref(self):
@@ -202,7 +220,7 @@ class Metatype(Node):
     Metatype object for Nodetype
     """
 
-    slug = models.SlugField(help_text=_('used for publication'), unique=True, max_length=255)
+    
     description = models.TextField(_('description'), blank=True, null=True)
     parent = models.ForeignKey('self', null=True, blank=True, verbose_name=_('parent metatype'), related_name='children')
 
@@ -327,9 +345,7 @@ class Nodetype(Node):
                                         related_name='member_types',
                                         blank=True, null=True)
 
-    slug = models.SlugField(help_text=_('used for publication'),
-                            unique_for_date='creation_date',
-                            max_length=255)
+    
 
     authors = models.ManyToManyField(User, verbose_name=_('authors'),
                                      related_name='nodetypes',
@@ -341,9 +357,8 @@ class Nodetype(Node):
     comment_enabled = models.BooleanField(_('comment enabled'), default=True)
     pingback_enabled = models.BooleanField(_('linkback enabled'), default=True)
 
-    creation_date = models.DateTimeField(_('creation date'),
-                                         default=datetime.now)
-    last_update = models.DateTimeField(_('last update'), default=datetime.now)
+    
+    
     start_publication = models.DateTimeField(_('start publication'),
                                              help_text=_('date start publish'),
                                              default=datetime.now)
@@ -397,8 +412,106 @@ class Nodetype(Node):
         elif not '</p>' in self.content:
             return linebreaks(self.content)
         return self.content
+    @property
+    def get_relations(self):
+        """
+        Returns all the relations of the nodetype
+        """
+        relations={}
+        
+        left_relations=Relation.objects.filter(left_subject=self.id)
+        if left_relations:    
+            for each in left_relations:
+                relation=each.relationtype.title
+                predicate=each.right_subject
+                relations[relation]=predicate
+        
+        right_relations=Relation.objects.filter(right_subject=self.id)
+        if right_relations:    
+            for each in right_relations:
+                relation=each.relationtype.inverse
+                predicate=each.left_subject
+                relations[relation]=predicate
+        return relations
 
-
+    @property
+    def get_rendered_nbh(self):
+        """          
+        Returns the neighbourhood of the nodetype
+        """
+        nbh = {}
+        nbh['title'] = self.title
+        nbh['altnames'] = self.altnames
+        nbh['plural'] = self.plural        
+        #get all MTs 
+        member_of_dict = {}
+        for each in self.metatypes.all():
+            member_of_dict[each.title]= each.get_absolute_url()
+        nbh['member_of_metatypes']=member_of_dict
+        typeof={}
+        parent=self.parent
+        if parent:
+            typeof[parent] = parent.get_absolute_url()
+        nbh['type_of']=typeof
+        #get all subtypes 
+        subtypes={}
+        for each in Nodetype.objects.filter(parent=self.id):
+            subtypes[each.title] =each.get_absolute_url()
+        nbh['contains_subtypes']=subtypes   
+        # get all the objects inheriting this OT 
+        contains_members_dict = {}
+        for each in self.member_objects.all():
+           contains_members_dict[each.title]= each.get_absolute_url()
+        nbh['contains_members'] = contains_members_dict
+        #get prior nodes
+        priornodes_dict = {}
+        for each in self.prior_nodes.all():
+             priornodes_dict[each.title]= each.get_absolute_url()
+        nbh['priornodes'] = priornodes_dict
+        #get posterior nodes
+        posteriornodes_dict = {}
+        for each in self.posterior_nodes.all():
+             posteriornodes_dict[each.title]= each.get_absolute_url()
+        nbh['posteriornodes'] = posteriornodes_dict
+        #get authors
+        author_dict = {}
+        for each in self.authors.all():
+             author_dict['User'] = each.get_absolute_url()
+        nbh['authors'] = author_dict
+        #get siblings
+        siblings={}
+        for each in self.get_siblings():
+            siblings[each.title]=each.get_absolute_url()
+        nbh['siblings']=siblings
+        #get Relations
+        relns={}
+        relnvalue={}
+        if self.get_relations:
+            NTrelns=self.get_relations
+            for value in NTrelns:
+                relnvalue[NTrelns[value].title]=NTrelns[value].ref.get_absolute_url()
+                relns[value]=relnvalue
+        nbh['relations']=relns
+        #get Attributes
+        attributes = self.subject_of.all()
+        nbh['attributes']=attributes
+        #get ATs
+        attributetypes={}
+        for each in self.subjecttype_of.all():
+            attributetypes[each.title]=each.get_absolute_url()
+        nbh['ats']=attributetypes
+        #get RTs as leftroles and rightroles
+        leftroles = {} 
+        for each in self.left_subjecttype_of.all():
+            leftroles[each.title]=each.get_absolute_url()
+        nbh['leftroles']=leftroles
+        rightroles = {} 
+        for each in self.right_subjecttype_of.all():
+            rightroles[each.title]=each.get_absolute_url()
+        nbh['rightroles']=rightroles
+        return nbh
+       
+ 
     @property
     def previous_nodetype(self):
         """Return the previous nodetype"""
@@ -695,7 +808,7 @@ class Objecttype(Nodetype):
 
 class Relationtype(Nodetype):
     '''
-    Binary Relationtypes are defined in this table.
+    Properties with left and right subjects (Binary relations) are defined in this class.
     '''
     inverse = models.CharField(_('inverse name'), help_text=_('when subjecttypes are interchanged, what should be the name of the relation type? This is mandatory field. If the relation is symmetric, same name will do.'), max_length=255,db_index=True ) 
     left_subjecttype = models.ForeignKey(NID,related_name="left_subjecttype_of", verbose_name='left role')  
@@ -832,20 +945,20 @@ class Relation(Edge):
     @property
     def composed_sentence(self):
         "composes the relation as a sentence in a triple format."
-        return '%s %s %s %s %s %s' % (self.subject1Scope, self.subject1, self.relationTypeScope, self.relationtype, self.objectScope, self.subject2)
+        return '%s %s %s %s %s %s' % (self.left_subject_scope, self.left_subject, self.relationtype_scope, self.relationtype, self.right_subject_scope, self.right_subject)
 
     @property
     def inversed_sentence(self):
         "composes the inverse relation as a sentence in a triple format."
-        return '%s %s %s %s %s' % (self.objectScope, self.subject2, self.relationtype.inverse, self.subject1Scope, self.subject1 )
+        return '%s %s %s %s %s' % (self.objectScope, self.right_subject, self.relationtype.inverse, self.left_subject_scope, self.left_subject )
 
     @property
     def key_value(self):
-        return dict({str(self.relationtype):str(self.subject2)})
+        return dict({str(self.relationtype):str(self.right_subject)})
 
     @property
     def inverse_key_value(self):
-        return dict({str(self.relationtype.inverse):str(self.subject1)})
+        return dict({str(self.relationtype.inverse):str(self.left_subject)})
 
 
     @property
@@ -854,7 +967,14 @@ class Relation(Edge):
         
         if self.relationtype:
            # for relation in self.relationtype():
-                return '%s %s %s' % (self.subject1,self.relationtype,self.subject2 )
+                return '%s %s %s' % (self.left_subject,self.relationtype,self.right_subject )
+
+    @property
+    def partial_composition(self):
+        '''
+        function that composes the right_subject and relation name, as in "x as a friend", "y as a sibling"
+        '''
+        return '%s as a %s' % (self.right_subject, self.relationtype) 
 
 
 class Attribute(Edge):
@@ -916,6 +1036,14 @@ class Attribute(Edge):
         '''
         return 'the %s of %s is %s' % (self.attributetype, self.subject, self.svalue)
     
+    @property
+    def partial_composition(self):
+        '''
+        function that composes the value and attribute name, as in "red as color", "4 as length"
+        '''
+        return '%s as %s' % (self.svalue, self.attributetype) 
+
+
     def subject_filter(self,attr):
         """
         returns applicable selection of nodes for selecting objects
@@ -1116,7 +1244,10 @@ class Systemtype(Nodetype):
 
 class AttributeSpecification(Node):
     """
-    specifying an attribute by a subject
+    specifying an attribute by a subject to say for example:
+    population of India, color of a flower etc.  These do not yeild a
+    proposition but a description, which can be used as a subject in
+    another sentence.
     """
     attributetype = models.ForeignKey(Attributetype, verbose_name='property name')
     subjects = models.ManyToManyField(NID, related_name="subjects_attrspec_of", verbose_name='subjects')
@@ -1127,7 +1258,10 @@ class AttributeSpecification(Node):
         '''
         composes a name to the attribute
         '''
-        return 'the %s of %s' % (self.attributetype, self.subject)
+        subjects = u''
+        for each in self.subjects.all():
+            subjects = subjects + each.title + ' '
+        return 'the %s of %s' % (self.attributetype, subjects)
 
 
     def __unicode__(self):
@@ -1153,14 +1287,17 @@ class RelationSpecification(Node):
         '''
         composing an expression with relation name and subject
         '''
-        return 'the %s of %s' % (self.relationtype, self.subject)
+        subjects = u''
+        for each in self.subjects.all():
+            subjects = subjects + each.title + ' '
+        return 'the %s of %s' % (self.relationtype, subjects)
 
     def __unicode__(self):
         return self.composed_subject
 
 
     class Meta:
-        verbose_name = _('relation as subject')
+        verbose_name = _('relation specification')
         permissions = (('can_view_all', 'Can view all'),
                        ('can_change_author', 'Can change author'), )
 
@@ -1172,11 +1309,18 @@ class NodeSpecification(Node):
     subject = models.ForeignKey(Node, related_name="subject_nodespec", verbose_name='subject name')
     relations = models.ManyToManyField(Relation, related_name="relations_in_nodespec", verbose_name='relations used to specify the domain')
     attributes = models.ManyToManyField(Attribute, related_name="attributes_in_nodespec", verbose_name='attributes used to specify the domain')
+
     @property
     def composed_subject(self):
         '''
         composing an expression subject and relations
         '''
+        relations = u''
+        for each in self.relations.all():
+            relations = relations + each.partial_composition + ', '
+        attributes = u''
+        for each in self.attributes.all():
+            attributes = attributes + each.partial_composition + ', '
         return 'the %s with %s, %s' % (self.subject, self.relations, self.attributes)
 
     def __unicode__(self):
@@ -1184,7 +1328,7 @@ class NodeSpecification(Node):
 
 
     class Meta:
-        verbose_name = _('relation as subject')
+        verbose_name = _('Node specification')
         permissions = (('can_view_all', 'Can view all'),
                        ('can_change_author', 'Can change author'), )
 
