@@ -78,7 +78,7 @@ $(function() {
   $.ajax({
     url: '/gstudio/graphs/graph_json/{{ node_id }}' ,
     //crossDomain: true,
-    //dataType: 'jsonp',
+    dataType: 'json',
     success : function(json) {
 
       var force; 
@@ -108,7 +108,7 @@ $(function() {
         return nodes_by_id[e.from] && nodes_by_id[e.to]
       }).value();
       
-       contains_members = _(json.contains_members).chain().map(function(e) {
+      var contains_members = _(json.contains_members).chain().map(function(e) {
         e.source = nodes_by_id[e.from];
         e.target = nodes_by_id[e.to];
         e.type = 'contains_members';

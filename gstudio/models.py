@@ -34,7 +34,7 @@ from gstudio.moderator import NodetypeCommentModerator
 from gstudio.url_shortener import get_url_shortener
 from gstudio.signals import ping_directories_handler
 from gstudio.signals import ping_external_urls_handler
-
+import json
 import reversion
 from reversion.models import Version
 from django.core import serializers
@@ -601,9 +601,9 @@ class Nodetype(Node):
         
         g_json = {}
         
-        this_node = {'_id':str(self.id),'title':self.title, 'url':self.get_absolute_url()}
+        this_node = {"_id":str(self.id),"title":self.title,"screen_name":self.title, "url":self.get_absolute_url()}
         
-        g_json['node_metadata']= [] 
+        g_json["node_metadata"]= [] 
         
         for key in nbh.keys():
             # check if the value is not null or empty 
@@ -615,17 +615,17 @@ class Nodetype(Node):
                     #iterate thru each element in list
                     for item in nbh[key]:
                         try:
-                            if item.__dict__.has_key('title'):
+                            if item.__dict__.has_key("title"):
                                 # add node
-                                g_json['node_metadata'].append({'_id':str(item.id),'title':item.title, 'url':item.get_absolute_url()})
+                                g_json["node_metadata"].append({"_id":str(item.id),"screen_name":self.title, "title":item.title, "url":item.get_absolute_url()})
                                 # add edge
-                                g_json[str(key)].append({'from':self.id , 'to':item.id })
-                            elif item.__dict__.has_key('username'):
+                                g_json[str(key)].append({"from":self.id , "to":item.id ,"value":1  })
+                            elif item.__dict__.has_key("username"):
                                 # add node
-                                g_json['node_metadata'].append({'_id':str(item.id),'title':item.username, 'url':item.get_absolute_url()})
+                                #g_json["node_metadata"].append({"_id":str(item.id),"title":item.username, "url":item.get_absolute_url()})
                                 # add edge
-                                g_json[str(key)].append({'from':self.id, 'to':item.id })
-
+                                #g_json[str(key)].append({"from":self.id, "to":item.id, "value":1 })
+                                pass
                         except:
                             pass
                 # is a string, then add as an attribute
@@ -634,9 +634,9 @@ class Nodetype(Node):
                     this_node[str(key)]=nbh[key]
         #end for              
         # add main node            
-        g_json['node_metadata'].append(this_node)
+        g_json["node_metadata"].append(this_node)
         
-        return g_json  
+        return json.dumps(g_json)  
 
 
     @property

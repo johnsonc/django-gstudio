@@ -26,7 +26,7 @@ def graph_json(request, node_id):
     except:
         return HttpResponse("Node not found.", "text/html")
 
-    return HttpResponse(str(node.get_graph_json()), "application/json")
+    return HttpResponse(node.get_graph_json(), "application/json")
     
 def force_graph(request, node_id):
     return render_to_response('gstudio/graph1.html',{'node_id': node_id })
