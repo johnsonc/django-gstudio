@@ -10,6 +10,7 @@ from gstudio.sitemaps import NodetypeSitemap
 from gstudio.sitemaps import MetatypeSitemap
 from gstudio.sitemaps import AuthorSitemap
 from objectapp.sitemaps import GbobjectSitemap
+from ajax_select import urls as ajax_select_urls
 
 
 admin.autodiscover()
@@ -27,6 +28,7 @@ urlpatterns = patterns(
     url(r'^xmlrpc/$', 'django_xmlrpc.views.handle_xmlrpc'),
     url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    url(r'^admin/lookups/', include(ajax_select_urls)),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^objects/admin/', include(admin.site.urls)),
     url(r'^gstudio/admin/', include(admin.site.urls)),

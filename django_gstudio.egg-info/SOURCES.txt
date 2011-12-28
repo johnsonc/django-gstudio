@@ -14,6 +14,7 @@ gstudio/__init__.py
 gstudio/comparison.py
 gstudio/context_processors.py
 gstudio/feeds.py
+gstudio/forms.py
 gstudio/gnowql.py
 gstudio/managers.py
 gstudio/models.py
@@ -156,6 +157,8 @@ gstudio/static/gstudio/img/trans.png
 gstudio/static/gstudio/img/wlw/comments.png
 gstudio/static/gstudio/img/wlw/objectapp.png
 gstudio/static/gstudio/img/wlw/watermark.png
+gstudio/static/gstudio/js/gstudiojs.js
+gstudio/static/gstudio/js/gstudiojs.js~
 gstudio/static/gstudio/js/jquery.autocomplete.js
 gstudio/static/gstudio/js/jquery.bgiframe.js
 gstudio/static/gstudio/js/jquery.js
@@ -405,6 +408,12 @@ gstudio/templates/gstudio/tags/recent_nodetypes.html
 gstudio/templates/gstudio/tags/similar_nodetypes.html
 gstudio/templates/gstudio/tags/slider_nodetypes.html
 gstudio/templates/gstudio/tags/tag_cloud.html
+gstudio/templates/gstudioforms/gstudioattributetypeform.html
+gstudio/templates/gstudioforms/gstudiometatypeform.html
+gstudio/templates/gstudioforms/gstudioobjecttypeform.html
+gstudio/templates/gstudioforms/gstudioprocesstypeform.html
+gstudio/templates/gstudioforms/gstudiorelationtypeform.html
+gstudio/templates/gstudioforms/gstudiosystemtypeform.html
 gstudio/templates/registration/activate.html
 gstudio/templates/registration/activation_email.txt
 gstudio/templates/registration/activation_email_subject.txt
@@ -452,6 +461,8 @@ gstudio/url_shortener/backends/__init__.py
 gstudio/url_shortener/backends/bitly.py
 gstudio/url_shortener/backends/default.py
 gstudio/urls/__init__.py
+gstudio/urls/add.py
+gstudio/urls/ajaxurls.py
 gstudio/urls/authors.py
 gstudio/urls/capabilities.py
 gstudio/urls/discussions.py
@@ -464,6 +475,8 @@ gstudio/urls/sitemap.py
 gstudio/urls/tags.py
 gstudio/urls/trackback.py
 gstudio/views/__init__.py
+gstudio/views/add.py
+gstudio/views/ajaxviews.py
 gstudio/views/authors.py
 gstudio/views/channels.py
 gstudio/views/decorators.py
