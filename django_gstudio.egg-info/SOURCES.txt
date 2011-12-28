@@ -14,6 +14,7 @@ gstudio/__init__.py
 gstudio/comparison.py
 gstudio/context_processors.py
 gstudio/feeds.py
+gstudio/forms.py
 gstudio/gnowql.py
 gstudio/managers.py
 gstudio/models.py
@@ -94,6 +95,8 @@ gstudio/management/commands/feed2gstudio.py
 gstudio/management/commands/gstudio2wp.py
 gstudio/management/commands/spam_cleanup.py
 gstudio/management/commands/wp2gstudio.py
+gstudio/migrations/0001_initial.py
+gstudio/migrations/__init__.py
 gstudio/plugins/__init__.py
 gstudio/plugins/admin.py
 gstudio/plugins/cms_app.py
@@ -404,6 +407,12 @@ gstudio/templates/gstudio/tags/recent_nodetypes.html
 gstudio/templates/gstudio/tags/similar_nodetypes.html
 gstudio/templates/gstudio/tags/slider_nodetypes.html
 gstudio/templates/gstudio/tags/tag_cloud.html
+gstudio/templates/gstudioforms/gstudioattributetypeform.html
+gstudio/templates/gstudioforms/gstudiometatypeform.html
+gstudio/templates/gstudioforms/gstudioobjecttypeform.html
+gstudio/templates/gstudioforms/gstudioprocesstypeform.html
+gstudio/templates/gstudioforms/gstudiorelationtypeform.html
+gstudio/templates/gstudioforms/gstudiosystemtypeform.html
 gstudio/templates/registration/activate.html
 gstudio/templates/registration/activation_email.txt
 gstudio/templates/registration/activation_email_subject.txt
@@ -451,6 +460,7 @@ gstudio/url_shortener/backends/__init__.py
 gstudio/url_shortener/backends/bitly.py
 gstudio/url_shortener/backends/default.py
 gstudio/urls/__init__.py
+gstudio/urls/add.py
 gstudio/urls/ajaxurls.py
 gstudio/urls/authors.py
 gstudio/urls/capabilities.py
@@ -464,6 +474,8 @@ gstudio/urls/sitemap.py
 gstudio/urls/tags.py
 gstudio/urls/trackback.py
 gstudio/views/__init__.py
+gstudio/views/add.py
+gstudio/views/ajaxviews.py
 gstudio/views/authors.py
 gstudio/views/channels.py
 gstudio/views/decorators.py
@@ -525,12 +537,6 @@ objectapp/management/commands/objectapp2wp.py
 objectapp/management/commands/spam_cleanup.py
 objectapp/management/commands/wp2objectapp.py
 objectapp/migrations/0001_initial.py
-objectapp/migrations/0002_auto__add_field_gbobject_pingback_enabled.py
-objectapp/migrations/0003_auto__chg_field_objecttype_title__chg_field_objecttype_slug__add_unique_ca.py
-objectapp/migrations/0004_mptt_objecttypes.py
-objectapp/migrations/0005_gbobject_protection.py
-objectapp/migrations/0006_gbobject_template.py
-objectapp/migrations/0007_gbobject_featured.py
 objectapp/migrations/__init__.py
 objectapp/plugins/__init__.py
 objectapp/plugins/admin.py

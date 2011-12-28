@@ -143,7 +143,7 @@ class NID(models.Model):
             vrs = Version.objects.filter(type=0 , object_id=self.id)
             # Returned value is a list, so splice it.                                                                                                     
             vrs =  vrs[0]            
-        except Error:
+        except:
             return None
         
         return vrs.object
