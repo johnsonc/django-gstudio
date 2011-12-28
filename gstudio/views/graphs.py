@@ -15,7 +15,7 @@ from gstudio.views.decorators import update_queryset
 def graph_json(request, node_id): 
 
     if(node_id=='189087228'):
-        jsonFile = open( os.path.join(os.path.dirname(__file__), 'egonet.json'), "r")
+        jsonFile = open( os.path.join(os.path.dirname(__file__), '../static/gstudio/js/egonet.json'), "r")
         #testjson = json.loads(jsonFile)
 
         return HttpResponse(str(jsonFile.read()), "application/json")
