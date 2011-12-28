@@ -4,8 +4,8 @@ from django.shortcuts import render_to_response
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from gstudio.gnowql import *
-import networkx as nx
-import d3 
+#import networkx as nx
+#import d3 
 import json
 from os.path import join
  
