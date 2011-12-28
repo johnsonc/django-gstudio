@@ -12,15 +12,27 @@ from os.path import join
 from gstudio.views.decorators import protect_nodetype
 from gstudio.views.decorators import update_queryset
 
-jsonFile = open("/home/johnson/Desktop/v_env_gstudio/django-gstudio/gstudio/views/egonet.json", "r")
 
-def graph_json(request): 
-    #testjson = json.loads(jsonFile)
 
-    return HttpResponse(jsonFile.read(), "application/json")
+
+def graph_json(request, node_id): 
+
+    if(node_id=='189087228'):
+        jsonFile = open("/home/johnson/Desktop/v_env_gstudio/django-gstudio/gstudio/views/egonet.json", "r")
+        #testjson = json.loads(jsonFile)
+
+        return HttpResponse(str(jsonFile.read()), "application/json")
+
+    try:
+        node = NID.objects.get(id=node_id)
+        node = node.ref        
+    except:
+        return HttpResponse("Node not found.", "text/html")
+
+    return HttpResponse(str(node.get_graph_json()), "application/json")
     
-def force_graph(request):
-    return render_to_response('gstudio/graph1.html',{'time': 'now'})
+def force_graph(request, node_id):
+    return render_to_response('gstudio/graph1.html',{'node_id': node_id })
 
  
 #node = get_node(str(object_id))

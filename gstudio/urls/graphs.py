@@ -9,6 +9,6 @@ from gstudio.settings import ALLOW_FUTURE
 
 urlpatterns = patterns(
     'gstudio.views.graphs',
-    url(r'^rgraph$','graph_json', name='radial_graph'), 
-    url(r'^graph$','force_graph', name='force_graph'), 
+    url(r'^graph_json/(?P<node_id>\d+)$','graph_json', name='graph_json_d3'), 
+    url(r'^graph/(?P<node_id>\d+)$','force_graph', name='force_graph_d3'), 
     )

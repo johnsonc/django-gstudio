@@ -595,6 +595,48 @@ class Nodetype(Node):
                      
         return attrs
 
+    def get_graph_json(self):
+
+        nbh = self.get_nbh
+        
+        g_json = {}
+        
+        this_node = {'_id':str(self.id),'title':self.title, 'url':self.get_absolute_url()}
+        
+        g_json['node_metadata']= [] 
+        
+        for key in nbh.keys():
+            # check if the value is not null or empty 
+            if nbh[key]:
+                # if not a string  (is list)
+                if not isinstance(nbh[key],basestring):
+                    # create a dict key for the relation
+                    g_json[str(key)]=[] 
+                    #iterate thru each element in list
+                    for item in nbh[key]:
+                        try:
+                            if item.__dict__.has_key('title'):
+                                # add node
+                                g_json['node_metadata'].append({'_id':str(item.id),'title':item.title, 'url':item.get_absolute_url()})
+                                # add edge
+                                g_json[str(key)].append({'from':self.id , 'to':item.id })
+                            elif item.__dict__.has_key('username'):
+                                # add node
+                                g_json['node_metadata'].append({'_id':str(item.id),'title':item.username, 'url':item.get_absolute_url()})
+                                # add edge
+                                g_json[str(key)].append({'from':self.id, 'to':item.id })
+
+                        except:
+                            pass
+                # is a string, then add as an attribute
+                else:
+                    # add attribute to node itself
+                    this_node[str(key)]=nbh[key]
+        #end for              
+        # add main node            
+        g_json['node_metadata'].append(this_node)
+        
+        return g_json  
 
 
     @property
@@ -610,6 +652,7 @@ class Nodetype(Node):
         if self.parent:
             return '%s is a kind of %s' % (self.title, self.parent.tree_path)
         return '%s is a root node' % (self.title)
+
 
     @property
     def html_content(self):
@@ -857,46 +900,6 @@ class Objecttype(Nodetype):
     def __unicode__(self):
         return self.title
 
-    def get_graph_json(self):
-
-        import networkx as nx
-        import d3
-        import json
-
-        nbh = self.get_nbh
-        
-        g_json = {}
-        #g_json['RT']=[{'from':'%s' , 'to':'%s'}]
-        g_json['node_metadata']= [{'_id':str(self.id),'title':self.title, 'url':self.get_absolute_url()}]
-
-
-        for key in nbh.keys():
-            # check if its not null or empty 
-            if nbh[key]:
-                # check if not a string(is list)
-                if not isinstance(nbh[key],basestring): 
-                    #iterate thru each element in list
-                    for item in nbh[key]:                        
-                        try:
-                            if item.__dict__.has_key('title'):
-                                g_json['node_metadata'].append({'_id':str(item.id),'title':item.title, 'url':item.get_absolute_url()})
-                              #G.add_node(item.title, uri=item.get_absolute_url())
-                                #G.add_edge(self.title, item.title,name=key)
-                            elif item.__dict__.has_key('username'):
-                                g_json['node_metadata'].append({'_id':str(this_node.id),'ref':this_node._meta.object_name, 'title':item.username})
-                                #G.add_node(item.username, uri=item.get_absolute_url())
-                                #G.add_edge(self.title, item.username,name=key)
-                        except:
-                            pass
-                # is a string
-                else: 
-                    pass
-                    #g_json['node_metadata'][self.title][str(key)]=nbh[key]
-                               
-        return g_json #d3.json_graph.node_link_data(G) 
-
-
-
     # def get_graph_json(self):
 
     #     import networkx as nx
@@ -1039,11 +1042,6 @@ class Objecttype(Nodetype):
 
 	return nbh
     
-    @property
-    def get_nbh_graph(self):
-        nbh = self.get_nbh
-        
-
     @property
     def get_rendered_nbh(self):
         """
