@@ -47,8 +47,7 @@ class CustomIndexDashboard(Dashboard):
                             'gstudio.models.Union',
                             'gstudio.models.Complement',
                             'gstudio.models.Intersection',
-
-
+                            'gstudio.models.Expression',
                             ),
 
                         ),

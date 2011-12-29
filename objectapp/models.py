@@ -253,7 +253,7 @@ class Gbobject(Node):
         nbh['member_of']=member_of_dict
         #get Relations
         relns={}
-
+        
         if self.get_relations1:
             NTrelns=self.get_relations1
             for value in NTrelns:

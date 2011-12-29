@@ -38,36 +38,37 @@
   {% with object.html_content|safe as object_content %}
 
 
-                           <b>Name: </b> {{ object.title }} <br/>
+                           <b>Name:<nbsp></b> {{ object.title }} <br/>
                            
 			   {% if object.get_rendered_nbh.plural %}
-                                <b> Plural Name :<nbsp></b>
+                                <b> Plural Name:<nbsp></b>
                                          {{object.get_rendered_nbh.plural}} <br/>
                            {% endif %}
                             {% if object.get_rendered_nbh.altnames %}
-                               <b> Alternate names :<nbsp></b>
+                               <b> Alternate names:<nbsp></b>
                                          {{object.get_rendered_nbh.altnames}} <br/>
 		           {% endif %}
+	                   {% if object.get_rendered_nbh.type_of %}
+                                <b> Type of:<nbsp></b>
+                                {% for typekey,typevalue in object.get_rendered_nbh.type_of.items %}
+                                       <a href="{{typevalue}}">{{typekey}}</a>;
+                                {% endfor %}<br/>
+                           {% endif %}
+
 			  
 			    {% if object.get_rendered_nbh.member_of_metatypes %}
                            
                           
-                                <b> Member of Metatypes :<nbsp></b>
+                                <b> Member of Metatypes:<nbsp></b>
                                     {% for mkey,mvalue in object.get_rendered_nbh.member_of_metatypes.items %}
                                         <a href="{{mvalue}}">{{mkey}}</a>;
                                     {% endfor %}<br/>
                            {% endif %}
                           
 			   
-	                   {% if object.get_rendered_nbh.type_of %}
-                                <b> Type of :<nbsp></b>
-                                {% for typekey,typevalue in object.get_rendered_nbh.type_of.items %}
-                                       <a href="{{typevalue}}">{{typekey}}</a>;
-                                {% endfor %}<br/>
-                           {% endif %}
 			        
                            {% if object.get_rendered_nbh.contains_subtypes %}
-                                <b> Contains SubTypes :<nbsp></b>
+                                <b> Contains SubTypes:<nbsp></b>
                                 {% for stkey,stvalue in object.get_rendered_nbh.contains_subtypes.items %}
                                         <a href="{{stvalue}}">{{stkey}}</a>;
                                 {% endfor %}<br/>
@@ -77,7 +78,7 @@
                            {% if object.get_rendered_nbh.contains_members %}
                          
                           
-                                <b>Contains Members :<nbsp></b>
+                                <b>Contains Members:<nbsp></b>
                                     {% for mkey,mvalue in object.get_rendered_nbh.contains_members.items %}
                                         <a href="{{mvalue}}">{{mkey}}</a>;
                                     {% endfor %}<br/>
@@ -90,15 +91,20 @@
                                 
 				   <b>Authors: <nbsp> </b>
                                 
-				    {% for athkey,athvalue in object.get_rendered_nbh.authors.items %}
-                                        <a href="{{athvalue}}">{{athkey}}</a>;	      
-				    {% endfor %}       <br/>
+				       
 	                   {% endif %}
-                          
+			
+                              {% for author in object.authors.all %}
+      			<span class="vcard author">
+        		<a href="{% url gstudio_author_detail author %}" class="fn nickname url" rel="author"
+           		title="{% blocktrans with author as author %}Show {{ author }} nodetypes{% endblocktrans %}">{{ author }}</a>
+      			</span>{% if not forloop.last %}, {% endif %}
+      				{% endfor %} <br/>
+                         
                             {% if object.get_rendered_nbh.siblings %}
                            
                                 
-				   <b>Siblings: <nbsp> </b>
+				   <b>Siblings:<nbsp> </b>
                                 
 				    {% for sibkey,sibvalue in object.get_rendered_nbh.siblings.items %}
                                              {{sibkey}};
@@ -111,7 +117,7 @@
                             {% if object.get_rendered_nbh.priornodes %}
                          
                            
-                                <b>Priornodes :<nbsp></b>
+                                <b>Priornodes:<nbsp></b>
                                     {% for mkey,mvalue in object.get_rendered_nbh.priornodes.items %}
                                         <a href="{{mvalue}}">{{mkey}}</a>;
                                     {% endfor %}<br/>
@@ -120,7 +126,7 @@
                            {% if object.get_rendered_nbh.posteriornodes %}
                          
                            
-                                <b>Posterior nodes :<nbsp></b>
+                                <b>Posterior nodes:<nbsp></b>
                                     {% for mkey,mvalue in object.get_rendered_nbh.posteriornodes.items %}
                                         <a href="{{mvalue}}">{{mkey}}</a>;
                                     {% endfor %}<br/>
@@ -141,7 +147,7 @@
                          
                            
                                 
-				   <b>Attributes: <nbsp> </b>
+				   <b>Attributes:<nbsp> </b>
                                 
 				    {% for items in object.get_rendered_nbh.attributes.items %}
                                         {{items}};	      
@@ -149,9 +155,8 @@
 	                   {% endif %}
                             {% if object.get_rendered_nbh.leftroles %}
                          
-                           
-                                
-				   <b>Left roles: <nbsp> </b>
+                                                         
+				   <b>Left roles:<nbsp> </b>
                                 
 				    {% for lrkey,lrvalue in object.get_rendered_nbh.leftroles.items %}
                                         <a href="{{lrvalue}}">{{lrkey}}</a>;	      
@@ -160,7 +165,7 @@
                            
                            {% if object.get_rendered_nbh.rightroles %}
                         
-			      <b>Right roles: <nbsp> </b>
+			      <b>Right roles:<nbsp> </b>
                                 
 				    {% for rrkey,rrvalue in object.get_rendered_nbh.rightroles.items %}
                                         <a href="{{rrvalue}}">{{rrkey}}</a>;	      
@@ -171,7 +176,7 @@
                            {% if object.get_rendered_nbh.ats %}
                                              
                                 
-				   <b>Attribute Types: <nbsp> </b>
+				   <b>Attribute Types:<nbsp> </b>
                                 
 				    {% for atkey,atvalue in object.get_rendered_nbh.ats.items %}
                                         <a href="{{atvalue}}">{{atkey}}</a>;	      

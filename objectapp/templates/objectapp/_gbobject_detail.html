@@ -25,11 +25,10 @@
       {% for Objecttype in object.objecttypes.all %}
       <a href="{{ Objecttype.get_absolute_url }}" title="{{ Objecttype }}" rel="tag Objecttype">{{ Objecttype }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}.
     </p>
-
-
+<p>
              <b>Name: </b> {{ object.title }} <br/>
 
-	     {% if object.get_rendered_nbh.plural %}
+               {% if object.get_rendered_nbh.plural %}
                                 <b> Plural Name :<nbsp></b>
                                          {{object.get_rendered_nbh.plural}} <br/>
                            {% endif %}
@@ -41,7 +40,7 @@
               {% if object.get_rendered_nbh.member_of %}
                            
                           
-                                <b> Member of Objecttypes :<nbsp></b>
+                                <b> Member of Metatypes :<nbsp></b>
 
                                     {% for mkey,mvalue in object.get_rendered_nbh.member_of.items %}
                                         <a href="{{mvalue}}">{{mkey}}</a>;
@@ -60,18 +59,21 @@
 	                   {% endif %}
                            
                            {% if object.get_rendered_nbh.attributes %}
-                                                                                  				   
+                         
+                           
                                 
-				    {% for atkey,atvalue in object.get_rendered_nbh.attributes.items %}
-                                        <b>{{atkey}} : <nbsp></b>{{atvalue}};<br/>	      
-				    {% endfor %}    
+				   <b>Attributes: <nbsp> </b>
+                                
+				    {% for items in object.get_rendered_nbh.attributes %}
+                                        {{items}};	      
+				    {% endfor %}       <br/>
 	                   {% endif %}
 
-
-	 
+</p>	     	 
 
 
   
+
   <div class="gbobject-body span-16 last">
     {% if object.image %}
     <div class="gbobject-image">
@@ -86,7 +88,6 @@
       {{ object_content }}
     </div>
   </div>
-
 
   <div class="gbobject-footer">
     <p class="gbobject-tags span-16 last">
@@ -127,14 +128,14 @@
       {% endwith %}
       {% with object.pingbacks.count as pingback_count %}
       {% if pingback_count %}
-      , <a href="{{ object.get_absolute_url }}#pingbacks" title="{{ object.title }}">
+       <a href="{{ object.get_absolute_url }}#pingbacks" title="{{ object.title }}">
         {% blocktrans count pingback_count as pingback_count %}{{ pingback_count }} pingback{% plural %}{{ pingback_count }} pingbacks{% endblocktrans %}
       </a>
       {% endif %}
       {% endwith %}
       {% with object.trackbacks.count as trackback_count %}
       {% if trackback_count %}
-      , <a href="{{ object.get_absolute_url }}#trackbacks" title="{{ object.title }}">
+       <a href="{{ object.get_absolute_url }}#trackbacks" title="{{ object.title }}">
         {% blocktrans count trackback_count as trackback_count %}{{ trackback_count }} trackback{% plural %}{{ trackback_count }} trackbacks{% endblocktrans %}
       </a>
       {% endif %}

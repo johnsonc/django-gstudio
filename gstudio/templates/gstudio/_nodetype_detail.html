@@ -26,72 +26,127 @@
       {% endif %}
       <abbr class="published" title="{{ object.creation_date|date:"c" }}Z">{{ object.creation_date|date:"DATE_FORMAT" }}</abbr>
 
+      </p><p>
 
-             <b>Its name is: </b> {{ object.title }}.
+      
+                          {% if object.get_rendered_nbh.plural %}
+                                <b> Its plural form is:<nbsp></b>
+                                         {{object.get_rendered_nbh.plural}};<nbsp>
+                           {% endif %}
+                            {% if object.get_rendered_nbh.altnames %}
+                               <b> It is known by other names:<nbsp></b>
+                                         {{object.get_rendered_nbh.altnames}} ;<nbsp>
+		           {% endif %}
+			  
+			    {% if object.get_rendered_nbh.member_of_metatypes %}
+                           
+	                   {% if object.get_rendered_nbh.type_of %}
+                                <b> is a kind of:<nbsp></b>
+                                {% for typekey,typevalue in object.get_rendered_nbh.type_of.items %}
+                                       <a href="{{typevalue}}">{{typekey}}</a>;
+                                {% endfor %};<nbsp>
+                           {% endif %}
+                          
+                           <b> member of metatype/s:<nbsp></b>
+                                    {% for mkey,mvalue in object.get_rendered_nbh.member_of_metatypes.items %}
+                                        <a href="{{mvalue}}">{{mkey}}</a>;
+                                    {% endfor %};<nbsp>
+                           {% endif %}
+                          
+                           {% if object.get_rendered_nbh.contains_subtypes %}
+                                <b> contains subtypes:<nbsp></b>
+                                {% for stkey,stvalue in object.get_rendered_nbh.contains_subtypes.items %}
+                                        <a href="{{stvalue}}">{{stkey}}</a>;
+                                {% endfor %};<nbsp>
+                           {% endif %}
+                          
+                          
+                           {% if object.get_rendered_nbh.contains_members %}
+                         
+                          
+                                <b>has members:<nbsp></b>
+                                    {% for mkey,mvalue in object.get_rendered_nbh.contains_members.items %}
+                                        <a href="{{mvalue}}">{{mkey}}</a>;
+                                    {% endfor %};<nbsp>
+                           {% endif %}
+                         
+                           
+                            
+                             
+                            {% if object.get_rendered_nbh.relations %}
+                         
+                         
+                                 {% for relkey,relvalue in object.get_rendered_nbh.relations.items %}
+                                          <b>{{relkey}}:<nbsp></b>
+					{% for relk, relv in relvalue.items %}
+					    <a href="{{relv}}">{{relk}}</a>;	      
+                                        {% endfor %};<nbsp>
+				 {% endfor %}      
+	                   {% endif %}
+                           
+                           {% if object.get_rendered_nbh.attributes %}
+                         
+                           
+                                
+				   <b>It has some more properties: <nbsp> </b>
+                                
+				    {% for items in object.get_rendered_nbh.attributes.items %}
+                                        {{items}};	      
+				    {% endfor %}       ;<nbsp>
+	                   {% endif %}
+    
 
-	     {% if object.altnames %}
-	     <b>It has alternate names: </b>
-	     {{ object.altnames }}. 		
-	     {% endif %}
-             {% if object.plural %}
-	     <b>It has plural name: </b> {{ object.plural }}. 
-	     {% endif %} 
+                            {% if object.get_rendered_nbh.leftroles %}
+                         
+                           
+                                
+				   <b>it is used as a subject-type for the relation: <nbsp> </b>
+                                
+				    {% for lrkey,lrvalue in object.get_rendered_nbh.leftroles.items %}
+                                        <a href="{{lrvalue}}">{{lrkey}}</a>;	      
+				    {% endfor %}       ;<nbsp>
+	                   {% endif %}
 
-	     {% if object.parent %}
-	     <b>It is a kind of: </b> 
-	     	     <a href="{{ object.parent.get_absolute_url }}">  {{ object.parent.title }}</a>.  
-	     {% endif %}
-
-  	     {% if object.get_children %}
-	     <b>It has subtypes: </b>
-	          {% for items in object.get_children %}
-	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
-	          {% endfor %} 		   
-	     {% endif %}
-
-	     {% if object.get_siblings %}
-	     <b>It has siblings: </b>
-	     {% for items in object.get_siblings %}
-	      <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>;
-	      {% endfor %}       
-	     {% endif %}  
-
-  	     {% if object.metatypes.all %}
-	     <b>It has member of metatypes: </b>
-	          {% for items in object.metatypes.all %}
-	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
-	     {% endfor %} 	     
-	     {% endif %}
-
-	     {% if object.gbobjects.all %}
-	     <b>It has the following member objects: </b>
-	          {% for items in object.gbobjects.all %}
-	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
-	          {% endfor %} 		   
-	     {% endif %}	     
-
-	     {% if object.subjecttypeLeft_gbnodetype.all %}
-	     <b>It is used as a domain for the relation types: </b> 
-	          {% for items in object.subjecttypeLeft_gbnodetype.all %}
-	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
-	     {% endfor %} 	     
-	     {% endif %}
-
-	     {% if object.subjecttypeRight_gbnodetype.all %}
-	     <b>And as a range for the relation types: </b> 
-	          {% for items in object.subjecttypeRight_gbnodetype.all %}
-	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
-	     {% endfor %}   	     
-	     {% endif %}
-
-	     {% if object.subjecttype_GbnodeType.all %}
-	     <b>It is a domain for the attribute types: </b> 
-	          {% for items in object.subjecttype_GbnodeType.all %}
-	     <a href="{{ items.get_absolute_url }}"> {{ items.title }}</a>; 
-	     {% endfor %} 	     
-	     {% endif %}
-
-
+                           
+                           {% if object.get_rendered_nbh.rightroles %}
+                        
+			      <b>it is used as an object in the predicate position for the relation: <nbsp> </b>
+                                
+				    {% for rrkey,rrvalue in object.get_rendered_nbh.rightroles.items %}
+                                        <a href="{{rrvalue}}">{{rrkey}}</a>;	      
+				    {% endfor %}       ;<nbsp>
+	                   {% endif %}
+                           
+                         
+                           {% if object.get_rendered_nbh.ats %}
+                                             
+                                
+				   <b>it is subject-type for the property: <nbsp> </b>
+                                
+				    {% for atkey,atvalue in object.get_rendered_nbh.ats.items %}
+                                        <a href="{{atvalue}}">{{atkey}}</a>;	      
+				    {% endfor %}       ;<nbsp>
+	                   {% endif %}
+                           
+</p><p>
+                            {% if object.get_rendered_nbh.priornodes %}
+                         
+                           
+                                <b>It has prerequisites:<nbsp></b>
+                                    {% for mkey,mvalue in object.get_rendered_nbh.priornodes.items %}
+                                        <a href="{{mvalue}}">{{mkey}}</a>;
+                                    {% endfor %};<nbsp>
+                           {% endif %}
+                           
+                           {% if object.get_rendered_nbh.posteriornodes %}
+                         
+                           
+                                <b>It is a prerequisite for:<nbsp></b>
+                                    {% for mkey,mvalue in object.get_rendered_nbh.posteriornodes.items %}
+                                        <a href="{{mvalue}}">{{mkey}}</a>;
+                                    {% endfor %};<nbsp>
+                           {% endif %}
+ 
 
 
 

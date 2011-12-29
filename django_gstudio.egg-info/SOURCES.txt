@@ -68,6 +68,7 @@ gstudio/admin/attribute_urlfield.py
 gstudio/admin/attributespecification.py
 gstudio/admin/attributetype.py
 gstudio/admin/complement.py
+gstudio/admin/expression.py
 gstudio/admin/forms.py
 gstudio/admin/intersection.py
 gstudio/admin/metatype.py
