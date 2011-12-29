@@ -286,7 +286,7 @@ class Gbobject(Node):
         this_node = {"_id":str(self.id),"title":self.title,"screen_name":self.title, "url":self.get_absolute_url()}
         
         g_json["node_metadata"]= [] 
-        
+        g_json["is_mentioned_by"]= [] 
         for key in nbh.keys():
             # check if the value is not null or empty 
             if nbh[key]:
@@ -302,6 +302,7 @@ class Gbobject(Node):
                                 g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
                                 # add edge
                                 g_json[str(key)].append({"from":self.id , "to":item.id ,"value":1  })
+                                g_json["is_mentioned_by"].append({"from":self.id , "to":item.id ,"value":1  })
                             elif item.__dict__.has_key("username"):
                                 # add node
                                 #g_json["node_metadata"].append({"_id":str(item.id),"title":item.username, "url":item.get_absolute_url()})
@@ -314,6 +315,7 @@ class Gbobject(Node):
                 else:
                     # add attribute to node itself
                     this_node[str(key)]=nbh[key]
+
         #end for              
         # add main node            
         g_json["node_metadata"].append(this_node)
