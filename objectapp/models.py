@@ -14,7 +14,7 @@ from django.contrib import comments
 from django.contrib.comments.models import CommentFlag
 from django.contrib.comments.moderation import moderator
 from django.utils.translation import ugettext_lazy as _
-
+import json
 from django.contrib.markup.templatetags.markup import markdown
 from django.contrib.markup.templatetags.markup import textile
 from django.contrib.markup.templatetags.markup import restructuredtext
@@ -275,6 +275,52 @@ class Gbobject(Node):
         nbh.update(self.get_attributes())
         # encapsulate the dictionary with its node name as key
         return nbh
+
+    
+    def get_graph_json(self):
+
+        nbh = self.get_nbh
+        
+        g_json = {}
+        
+        this_node = {"_id":str(self.id),"title":self.title,"screen_name":self.title, "url":self.get_absolute_url()}
+        
+        g_json["node_metadata"]= [] 
+        
+        for key in nbh.keys():
+            # check if the value is not null or empty 
+            if nbh[key]:
+                # if not a string  (is list)
+                if not isinstance(nbh[key],basestring):
+                    # create a dict key for the relation
+                    g_json[str(key)]=[] 
+                    #iterate thru each element in list
+                    for item in nbh[key]:
+                        try:
+                            if item.__dict__.has_key("title"):
+                                # add node
+                                g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
+                                # add edge
+                                g_json[str(key)].append({"from":self.id , "to":item.id ,"value":1  })
+                            elif item.__dict__.has_key("username"):
+                                # add node
+                                #g_json["node_metadata"].append({"_id":str(item.id),"title":item.username, "url":item.get_absolute_url()})
+                                # add edge
+                                #g_json[str(key)].append({"from":self.id, "to":item.id, "value":1 })
+                                pass
+                        except:
+                            pass
+                # is a string, then add as an attribute
+                else:
+                    # add attribute to node itself
+                    this_node[str(key)]=nbh[key]
+        #end for              
+        # add main node            
+        g_json["node_metadata"].append(this_node)
+        
+        return json.dumps(g_json)  
+
+
 
     @property
     def get_relations1(self):
