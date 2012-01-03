@@ -381,6 +381,7 @@ gstudio/templates/feeds/pingback_title.html
 gstudio/templates/feeds/trackback_description.html
 gstudio/templates/feeds/trackback_title.html
 gstudio/templates/gstudio/_header.html
+gstudio/templates/gstudio/_narrative_detail.html
 gstudio/templates/gstudio/_nodetype_detail.html
 gstudio/templates/gstudio/_nodetype_neighbourhood.html
 gstudio/templates/gstudio/_subtype_detail.html
@@ -816,6 +817,7 @@ objectapp/templates/feeds/trackback_description.html
 objectapp/templates/feeds/trackback_title.html
 objectapp/templates/objectapp/_gbobject_detail.html
 objectapp/templates/objectapp/_header.html
+objectapp/templates/objectapp/_narrative_detail.html
 objectapp/templates/objectapp/_subtype_detail.html
 objectapp/templates/objectapp/author_list.html
 objectapp/templates/objectapp/base.html

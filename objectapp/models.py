@@ -220,20 +220,51 @@ class Gbobject(Node):
         Returns all the relations of the nodetype
         """
         relations={}
-        
+        reltype={}
         left_relations=Relation.objects.filter(left_subject=self.id)
-        if left_relations:    
-            for each in left_relations:
-                relation=each.relationtype.title
-                predicate=each.right_subject
-                relations[relation]=predicate
+        if left_relations:
+           for each in left_relations:
+           	relation=each.relationtype.title
+           	predicate=each.right_subject
+           	predicate_values=[]
+                if reltype:
+              	   for key,value in reltype.items():
+                       predicate_values=value
+                       if each.relationtype.title==key:
+                          predicate_values.append(predicate)
+                          reltype[key]=predicate_values
+                          break
+                       else:
+                          predicate_values=predicate
+                          reltype[relation]=predicate_values
+                          break
+                else:
+                    predicate_values.append(predicate)
+                    reltype[relation]=predicate_values
+                relations['lrelations']=reltype
         
         right_relations=Relation.objects.filter(right_subject=self.id)
-        if right_relations:    
-            for each in right_relations:
-                relation=each.relationtype.inverse
-                predicate=each.left_subject
-                relations[relation]=predicate
+        reltype={}
+        if right_relations:
+           for each in right_relations:
+           	relation=each.relationtype.inverse
+           	predicate=each.left_subject
+                predicate_values=[]
+                if reltype:
+              	   for key,value in reltype.items():
+                       predicate_values=value
+                       if each.relationtype.inverse==key:
+                          predicate_values.append(predicate)
+                          reltype[key]=predicate_values
+                          break
+                       else:
+                          predicate_values=predicate
+                          reltype[relation]=predicate_values
+                          break
+                else:
+                   predicate_values.append(predicate)
+                   reltype[relation]=predicate_values
+                relations['rrelations']=reltype
         return relations
     @property
     def get_rendered_nbh(self):
@@ -253,14 +284,37 @@ class Gbobject(Node):
         nbh['member_of']=member_of_dict
         #get Relations
         relns={}
-        
         if self.get_relations1:
             NTrelns=self.get_relations1
-            for value in NTrelns:
-                relnvalue={}
-                relnvalue[NTrelns[value].title]=NTrelns[value].ref.get_absolute_url()
-                relns[value]=relnvalue
-        nbh['relations']=relns
+            for key,value in NTrelns.items():
+                if key=="rrelations":
+                    relrgt={}
+                    for rgtkey,rgtvalue in value.items():
+                        relnvalue={}
+                        if isinstance(rgtvalue,list):
+                            for items in rgtvalue:
+                                relnvalue[items]=items.get_absolute_url()
+                        else:
+                            relnvalue[rgtvalue]=rgtvalue.get_absolute_url()
+                        
+                        relrgt[rgtkey]=relnvalue
+                    
+                else:
+                    rellft={}
+                    relns['left']=rellft
+                    for lftkey,lftvalue in value.items():
+                        relnvalue={}
+                        if isinstance(lftvalue,list):
+                             for items in lftvalue:
+                                 relnvalue[items]=items.get_absolute_url()
+                        else:
+                             relnvalue[lftvalue]=lftvalue.get_absolute_url()
+                        
+                        rellft[lftkey]=relnvalue
+                    
+        nbh['relations']=relrgt
+        nbh['relations'].update(rellft)
+   
         #get Attributes
         attributes ={}
         for each in self.subject_of.all():
