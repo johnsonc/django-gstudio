@@ -713,8 +713,8 @@ class Objecttype(Nodetype):
         get members of the object type
         """
         members = []
-        if self.gbobjects.all():
-            for gbobject in self.gbobjects.all():   
+        if self.member_objects.all():
+            for gbobject in self.member_objects.all():   
 		members.append(gbobject)
         return members    
 
