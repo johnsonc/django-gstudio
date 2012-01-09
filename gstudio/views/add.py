@@ -13,6 +13,8 @@ def addmetatype(request):
         if formset.is_valid():
             formset.save()
             return HttpResponseRedirect("/gstudio/")
+ 
+ 
         
     else:
        
@@ -101,9 +103,28 @@ def addprocesstype(request):
 
             formset = ProcesstypeForm()
 
-            template = "gstudioforms/gstudioprocesstypeform.html"
+            template = "gstudioforms/gstudioattributeform.html"
             variables = RequestContext(request,{'formset':formset})
             return render_to_response(template, variables)
+
+def addattribute(request):
+        if request.method == 'POST':
+            formset = AttributeForm(request.POST)
+            if formset.is_valid():
+                formset.save()
+                return HttpResponseRedirect("/gstudio/")
+            
+                    
+        else:
+
+            formset = AttributeForm()
+
+            template = "gstudioforms/gstudioattributeform.html"
+            variables = RequestContext(request,{'formset':formset})
+            return render_to_response(template, variables)
+
+
+
 
 
 
