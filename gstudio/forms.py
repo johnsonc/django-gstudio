@@ -7,10 +7,11 @@ class MetatypeForm(ModelForm):
         model = Metatype
 
 class ObjecttypeForm(ModelForm):                 
+
     class Meta:
         model = Objecttype
         fields = ('title', 'altnames','plural','parent','slug','metatypes','tags',
-                  'status','content','prior_nodes','posterior_nodes','password','login_required','sites')
+                      'status','content','prior_nodes','posterior_nodes','password','login_required','sites')
 
 class AttributetypeForm(ModelForm):
 
@@ -39,5 +40,9 @@ class ProcesstypeForm(ModelForm):
          model =Processtype
          fields =('title','altnames','content','parent','slug','status','changing_attributetype_set','changing_relationtype_set',
 		 'prior_nodes','posterior_nodes','sites')
+
+class AttributeForm(ModelForm):
+    class Meta:
+        model = Attribute
 
 

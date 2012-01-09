@@ -14,6 +14,8 @@ urlpatterns = patterns(
     url(r'^trackback/', include('gstudio.urls.trackback')),
     url(r'^discussions/', include('gstudio.urls.discussions')),
     url(r'^add/', include('gstudio.urls.add')),
+    url(r'^ajax/', include('gstudio.urls.ajaxurls')),
+  
     url(r'^', include('gstudio.urls.quick_nodetype')),
     url(r'^', include('gstudio.urls.capabilities')),
     url(r'^', include('gstudio.urls.nodetypes')),

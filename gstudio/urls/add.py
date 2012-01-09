@@ -17,4 +17,7 @@ urlpatterns = patterns('gstudio.views.add',
                            name='gstudio_add_systemtype'),
 		       url(r'^processtype/$', 'addprocesstype',
                            name='gstudio_add_systemtype'),	
+		       url(r'^attribute/$', 'addattribute',
+                           name='gstudio_add_attribute'),	
+
                        )
