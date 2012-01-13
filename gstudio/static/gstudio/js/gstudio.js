@@ -51,12 +51,16 @@ $ = django.jQuery
 		   $.get(url,
 			 function(data){			     
 
+			             $("#id_subject").empty()
 			     
-			     $("#id_subject").empty()
-			         $('#id_subject').append(
-						       $('<option></option>').val(data.id).html(data.title)
-						       );
+			             for (var key in data) {
+					$('#id_subject').append(
+								$('<option></option>').val(key).html(data[key])
+								);
+				     }
 
+
+			     
 
 
 			 });
