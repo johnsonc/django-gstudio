@@ -42,7 +42,7 @@ def get_nodetype(name):
         # Returned value is a list, so splice it .
         vrs =  vrs[0]
 
-    except Error:
+    except:
         return "The item was not found."
         
     return vrs.object._meta.module_name   
