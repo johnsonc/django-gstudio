@@ -34,7 +34,7 @@ from gstudio.moderator import NodetypeCommentModerator
 from gstudio.url_shortener import get_url_shortener
 from gstudio.signals import ping_directories_handler
 from gstudio.signals import ping_external_urls_handler
-
+import json
 import reversion
 from reversion.models import Version
 from django.core import serializers
@@ -108,6 +108,10 @@ class Author(User):
     def nodetypes_published(self):
         """Return only the nodetypes published"""
         return nodetypes_published(self.nodetypes)
+    
+    @property
+    def title(self):
+        return self.username
 
     @models.permalink
     def get_absolute_url(self):
@@ -156,7 +160,10 @@ class NID(models.Model):
         Returns the object reference the id belongs to.
         """
         try:
-            """                                                                                                                                                         ALGO:     get object id, go to version model, return for the given id.                                                                                      """
+            """ 
+            ALGO:     get object id, go to version model, return for the given id.
+            """
+
             # Retrieving only the relevant tupleset for the versioned objects
             vrs = Version.objects.filter(type=0 , object_id=self.id)
             # Returned value is a list, so splice it.                                                                                                     
@@ -253,6 +260,91 @@ class Metatype(Node):
 
 
     @property
+    def get_possible_attributetypes(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the AT's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # recursive thru parent field and append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        attrtypes = [] 
+                
+        for each in ancestor_list:
+            # retrieve all the AT's from each ancestor 
+            attrtypes.extend(Attributetype.objects.filter(subjecttype=each.id))
+                     
+        return attrtypes
+
+
+    @property
+    def get_possible_rels(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the R's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        rels = {}
+        rt_set = Relation.objects.all()
+        right_subset = []
+        left_subset = []
+        
+        for each in ancestor_list:
+            # retrieve all the RT's from each ancestor 
+            right_subset.extend(rt_set.filter(subject1=each.id))
+            left_subset.extend(rt_set.filter(subject2=each.id))
+         
+        rels['possible_leftroles'] = left_subset
+        rels['possible_rightroles'] = right_subset
+        
+        return rels
+
+
+
+    @property
+    def get_possible_attributes(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the RT's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # recursive thru parent field and append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        attrs = [] 
+                
+        for each in ancestor_list:
+            # retrieve all the AT's from each ancestor 
+            attrs.extend(Attribute.objects.filter(subject=each.id))
+                     
+        return attrs
+
+    @property
     def get_rendered_nbh(self):
         """
         Returns the neighbourhood of the metatype
@@ -274,7 +366,6 @@ class Metatype(Node):
         nbh['attributetypes'] = Attributetype.objects.filter(subjecttype=self.id)
 
         return nbh
-
 
                   
     @property
@@ -386,6 +477,168 @@ class Nodetype(Node):
     objects = models.Manager()
     published = NodetypePublishedManager()
 
+
+    def get_possible_reltypes(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the RT's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        reltypes = {}
+        rt_set = Relationtype.objects.all()
+        right_subset = []
+        left_subset = []
+        
+        for each in ancestor_list:
+            # retrieve all the RT's from each ancestor 
+            right_subset.extend(rt_set.filter(subjecttypeLeft=each.id))
+            left_subset.extend(rt_set.filter(subjecttypeRight=each.id))
+         
+        reltypes['possible_leftroles'] = left_subset
+        reltypes['possible_rightroles'] = right_subset
+        
+        return reltypes
+
+
+    @property
+    def get_possible_attributetypes(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the AT's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # recursive thru parent field and append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        attrtypes = [] 
+                
+        for each in ancestor_list:
+            # retrieve all the AT's from each ancestor 
+            attrtypes.extend(Attributetype.objects.filter(subjecttype=each.id))
+                     
+        return attrtypes
+
+
+    @property
+    def get_possible_rels(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the R's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        rels = {}
+        rt_set = Relation.objects.all()
+        right_subset = []
+        left_subset = []
+        
+        for each in ancestor_list:
+            # retrieve all the RT's from each ancestor 
+            right_subset.extend(rt_set.filter(subject1=each.id))
+            left_subset.extend(rt_set.filter(subject2=each.id))
+         
+        rels['possible_leftroles'] = left_subset
+        rels['possible_rightroles'] = right_subset
+        
+        return rels
+
+
+
+    @property
+    def get_possible_attributes(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the RT's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # recursive thru parent field and append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        attrs = [] 
+                
+        for each in ancestor_list:
+            # retrieve all the AT's from each ancestor 
+            attrs.extend(Attribute.objects.filter(subject=each.id))
+                     
+        return attrs
+
+    def get_graph_json(self):
+
+        nbh = self.get_nbh
+        
+        g_json = {}
+        
+        this_node = {"_id":str(self.id),"title":self.title,"screen_name":self.title, "url":self.get_absolute_url()}
+        
+        g_json["node_metadata"]= [] 
+        
+        for key in nbh.keys():
+            # check if the value is not null or empty 
+            if nbh[key]:
+                # if not a string  (is list)
+                if not isinstance(nbh[key],basestring):
+                    # create a dict key for the relation
+                    g_json[str(key)]=[] 
+                    #iterate thru each element in list
+                    for item in nbh[key]:
+                        try:
+                            if item.__dict__.has_key("title"):
+                                # add node
+                                g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
+                                # add edge
+                                g_json[str(key)].append({"from":self.id , "to":item.id ,"value":1  })
+                            elif item.__dict__.has_key("username"):
+                                # add node
+                                #g_json["node_metadata"].append({"_id":str(item.id),"title":item.username, "url":item.get_absolute_url()})
+                                # add edge
+                                #g_json[str(key)].append({"from":self.id, "to":item.id, "value":1 })
+                                pass
+                        except:
+                            pass
+                # is a string, then add as an attribute
+                else:
+                    # add attribute to node itself
+                    this_node[str(key)]=nbh[key]
+        #end for              
+        # add main node            
+        g_json["node_metadata"].append(this_node)
+        
+        return json.dumps(g_json)  
+
+
     @property
     def tree_path(self):
         """Return nodetype's tree path, by its ancestors"""
@@ -399,6 +652,7 @@ class Nodetype(Node):
         if self.parent:
             return '%s is a kind of %s' % (self.title, self.parent.tree_path)
         return '%s is a root node' % (self.title)
+
 
     @property
     def html_content(self):
@@ -646,6 +900,47 @@ class Objecttype(Nodetype):
     def __unicode__(self):
         return self.title
 
+    # def get_graph_json(self):
+
+    #     import networkx as nx
+    #     import d3
+    #     import json
+
+    #     nbh = self.get_nbh
+        
+    #     G = nx.DiGraph()
+        
+    #     G.add_node(self.title, uri=self.get_absolute_url())
+        
+    #     
+    #     
+    #     
+
+    #     for key in nbh.keys():
+    #         # check if its not null or empty 
+    #         if nbh[key]:
+    #             # check if not a string(is list)
+    #             if not isinstance(nbh[key],basestring):                
+    #                 for item in nbh[key]:
+                        
+    #                     try:
+    #                         if item.__dict__.has_key('title'):
+    #     
+    #                           G.add_node(item.title, uri=item.get_absolute_url())
+    #                           G.add_edge(self.title, item.title,name=key)
+    #                         elif item.__dict__.has_key('username'):
+    #                            G.add_node(item.username, uri=item.get_absolute_url())
+    #                            G.add_edge(self.title, item.username,name=key)
+    #                     except:
+    #                         pass
+    #             # is a string
+    #             else: 
+    #                 G.node[self.title][str(key)]=nbh[key]
+                               
+    #     return G #d3.json_graph.node_link_data(G) 
+
+
+                    
     @property
     def get_attributetypes(self):        
         return self.subjecttype_of.all()
@@ -729,15 +1024,15 @@ class Objecttype(Nodetype):
         nbh['plural'] = self.plural        
         nbh['member_of_metatype'] = self.metatypes.all()
         # get all the ATs for the objecttype
-        nbh.update(self.get_attributetypes) 
+        nbh['subjecttype_of']= self.subjecttype_of.all() 
         # get all the RTs for the objecttype        
         nbh.update(self.get_relationtypes) 
 
-        nbh['type_of'] = self.parent
+        nbh['type_of'] = [self.parent]
 
         nbh['contains_subtypes'] = Nodetype.objects.filter(parent=self.id)
         # get all the objects inheriting this OT 
-        nbh['contains_members'] = self.gbobjects.all()
+        nbh['contains_members'] = self.member_objects.all()
 
         nbh['prior_nodes'] = self.prior_nodes.all()             
 
@@ -746,8 +1041,7 @@ class Objecttype(Nodetype):
 	nbh['authors'] = self.authors.all()
 
 	return nbh
-
-
+    
     @property
     def get_rendered_nbh(self):
         """
@@ -762,10 +1056,18 @@ class Objecttype(Nodetype):
             member_of_metatypes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
         nbh['member_of_metatypes'] = member_of_metatypes_list
 
-        nbh.update(self.get_attributetypes)
+
+        attributetypes_list = []
+        for each in self.get_attributetypes:
+           attributetypes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['attributetypes'] = attributetypes_list
+
 
         # get all the RTs for the objecttype
-        nbh.update(self.get_relationtypes)
+        reltypes_list = []
+        for each in self.get_relationtypes:
+           reltypes_list.append('<a href="%s">%s</a>' % (each.get_absolute_url(), each.title))
+        nbh['relationtypes'] = reltypes_list
 
         nbh['type_of'] = self.parent
 

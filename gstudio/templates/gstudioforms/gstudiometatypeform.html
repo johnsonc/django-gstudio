@@ -5,7 +5,15 @@
 <form method="post" action=".">
 {% csrf_token %}  
 <h2>Form to add Metatypes</h2>
-{{formset.as_p}}
+{% for field in formset %}
+
+     {{ field.label_tag }}:{{ field }}<br>
+     {{field.help_text}}<br>
+     {{ field.errors }}<br>
+
+
+{% endfor %}
+
 
   <input type="Submit" value="{% trans 'ADD' %}" />
   <input type="hidden" name="next" value="{{ next }}" />

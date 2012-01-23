@@ -14,7 +14,7 @@ from django.contrib import comments
 from django.contrib.comments.models import CommentFlag
 from django.contrib.comments.moderation import moderator
 from django.utils.translation import ugettext_lazy as _
-
+import json
 from django.contrib.markup.templatetags.markup import markdown
 from django.contrib.markup.templatetags.markup import textile
 from django.contrib.markup.templatetags.markup import restructuredtext
@@ -24,12 +24,14 @@ from djangoratings.fields import RatingField
 from tagging.fields import TagField
 from gstudio.models import Nodetype
 from gstudio.models import Objecttype
-from gstudio.models import Node
-from gstudio.models import Edge
+from gstudio.models import Relationtype
 from gstudio.models import Systemtype
 from gstudio.models import Processtype
+from gstudio.models import Attributetype
 from gstudio.models import Attribute
 from gstudio.models import Relation
+from gstudio.models import Node
+from gstudio.models import Edge
 from gstudio.models import Author
 
 import reversion
@@ -152,8 +154,8 @@ class Gbobject(Node):
         # 3. For each RT, create a dict key and a value as a dict. And add the relation as a new key-value pair (rid:subject).
         # 4. If self is in right value, then add inverse relation as RT and add the relation as a new key-value pair (rid:subject).
 
-        left_relset = Relation.objects.filter(subject1=self.id) 
-        right_relset = Relation.objects.filter(subject2=self.id) 
+        left_relset = Relation.objects.filter(left_subject=self.id) 
+        right_relset = Relation.objects.filter(right_subject=self.id) 
         
         #return left_relset + right_relset
 
@@ -187,12 +189,72 @@ class Gbobject(Node):
 
     def get_attributes(self):
         attributes =  {}
-        for attribute in self.subject_gbnode.all(): #Attribute.objects.filter(subject=self.id):
+        for attribute in Attribute.objects.filter(subject=self.id):
             for key,value in attribute.edge_node_dict.iteritems():
                 attributes[key]= value
                 
         return attributes
             
+    
+    
+    def get_possible_rels(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the R's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        rels = {}
+        rt_set = Relation.objects.all()
+        right_subset = []
+        left_subset = []
+        
+        for each in ancestor_list:
+            # retrieve all the RT's from each ancestor 
+            right_subset.extend(rt_set.filter(subject1=each.id))
+            left_subset.extend(rt_set.filter(subject2=each.id))
+         
+        rels['possible_leftroles'] = left_subset
+        rels['possible_rightroles'] = right_subset
+        
+        return rels
+
+
+    def get_possible_attributes(self):
+        """
+        Gets the relations possible for this metatype
+        1. Recursively create a set of all the ancestors i.e. parent/subtypes of the MT. 
+        2. Get all the RT's linked to each ancestor 
+        """
+        #Step 1. 
+        ancestor_list = []
+        this_parent = self.parent
+        
+        # recursive thru parent field and append
+        while this_parent:
+            ancestor_list.append(this_parent)
+            this_parent = this_parent.parent
+            
+        #Step 2.
+        attrs = [] 
+                
+        for each in ancestor_list:
+            # retrieve all the AT's from each ancestor 
+            attrs.extend(Attribute.objects.filter(subject=each.id))
+                     
+        return attrs
+
+
+
 
     @property
     def get_nbh(self):
@@ -213,6 +275,54 @@ class Gbobject(Node):
         nbh.update(self.get_attributes())
         # encapsulate the dictionary with its node name as key
         return nbh
+
+    
+    def get_graph_json(self):
+
+        nbh = self.get_nbh
+        
+        g_json = {}
+        
+        this_node = {"_id":str(self.id),"title":self.title,"screen_name":self.title, "url":self.get_absolute_url()}
+        
+        g_json["node_metadata"]= [] 
+        g_json["is_mentioned_by"]= [] 
+        for key in nbh.keys():
+            # check if the value is not null or empty 
+            if nbh[key]:
+                # if not a string  (is list)
+                if not isinstance(nbh[key],basestring):
+                    # create a dict key for the relation
+                    g_json[str(key)]=[] 
+                    #iterate thru each element in list
+                    for item in nbh[key]:
+                        try:
+                            if item.__dict__.has_key("title"):
+                                # add node
+                                g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
+                                # add edge
+                                g_json[str(key)].append({"from":self.id , "to":item.id ,"value":1  })
+                                g_json["is_mentioned_by"].append({"from":self.id , "to":item.id ,"value":1  })
+                            elif item.__dict__.has_key("username"):
+                                # add node
+                                #g_json["node_metadata"].append({"_id":str(item.id),"title":item.username, "url":item.get_absolute_url()})
+                                # add edge
+                                #g_json[str(key)].append({"from":self.id, "to":item.id, "value":1 })
+                                pass
+                        except:
+                            pass
+                # is a string, then add as an attribute
+                else:
+                    # add attribute to node itself
+                    this_node[str(key)]=nbh[key]
+
+        #end for              
+        # add main node            
+        g_json["node_metadata"].append(this_node)
+        
+        return json.dumps(g_json)  
+
+
 
     @property
     def get_relations1(self):
