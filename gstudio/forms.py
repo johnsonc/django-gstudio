@@ -7,6 +7,13 @@ class MetatypeForm(ModelForm):
         model = Metatype
 
 class ObjecttypeForm(ModelForm):                 
+    def clean(self):
+        CleanedData = self.cleaned_data
+        title = CleanedData.get('title')
+        if title == "":
+            raise forms.ValidationError("Title should no ")
+        return CleanedData
+
 
     class Meta:
         model = Objecttype

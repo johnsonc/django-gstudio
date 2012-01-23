@@ -5,7 +5,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from datetime import datetime
 from gstudio.forms import *
-from django.core.exceptions import ValidationError
+
 
 def addmetatype(request):
     if request.method == 'POST':
@@ -19,9 +19,11 @@ def addmetatype(request):
     else:
        
         formset = MetatypeForm()
-        variables = RequestContext(request,{'formset':formset})
-        template = "gstudioforms/gstudiometatypeform.html"
-        return render_to_response(template, variables)
+
+
+    variables = RequestContext(request,{'formset':formset})
+    template = "gstudioforms/gstudiometatypeform.html"
+    return render_to_response(template, variables)
 
     
     
@@ -31,15 +33,16 @@ def addobjecttype(request):
             if formset.is_valid():
                 formset.save()
                 return HttpResponseRedirect("/gstudio/")
+ 
             
                     
         else:
 
             formset = ObjecttypeForm()
 
-            template = "gstudioforms/gstudioobjecttypeform.html"
-            variables = RequestContext(request,{'formset':formset})
-            return render_to_response(template, variables)
+        template = "gstudioforms/gstudioobjecttypeform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
 
 def addrelationtype(request):
         if request.method == 'POST':
@@ -53,9 +56,9 @@ def addrelationtype(request):
 
             formset = RelationtypeForm()
 
-            template = "gstudioforms/gstudiorelationtypeform.html"
-            variables = RequestContext(request,{'formset':formset})
-            return render_to_response(template, variables)
+        template = "gstudioforms/gstudiorelationtypeform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
 
 
 def addattributetype(request):
@@ -70,9 +73,9 @@ def addattributetype(request):
 
             formset = AttributetypeForm()
 
-            template = "gstudioforms/gstudioattributetypeform.html"
-            variables = RequestContext(request,{'formset':formset})
-            return render_to_response(template, variables)
+        template = "gstudioforms/gstudioattributetypeform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
 
 
 def addsystemtype(request):
@@ -87,9 +90,9 @@ def addsystemtype(request):
 
             formset = SystemtypeForm()
 
-            template = "gstudioforms/gstudioattributetypeform.html"
-            variables = RequestContext(request,{'formset':formset})
-            return render_to_response(template, variables)
+        template = "gstudioforms/gstudiosystemtypeform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
 
 def addprocesstype(request):
         if request.method == 'POST':
@@ -103,9 +106,9 @@ def addprocesstype(request):
 
             formset = ProcesstypeForm()
 
-            template = "gstudioforms/gstudioattributeform.html"
-            variables = RequestContext(request,{'formset':formset})
-            return render_to_response(template, variables)
+        template = "gstudioforms/gstudioprocesstypeform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
 
 def addattribute(request):
         if request.method == 'POST':
@@ -119,9 +122,9 @@ def addattribute(request):
 
             formset = AttributeForm()
 
-            template = "gstudioforms/gstudioattributeform.html"
-            variables = RequestContext(request,{'formset':formset})
-            return render_to_response(template, variables)
+        template = "gstudioforms/gstudioattributeform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
 
 
 
