@@ -394,6 +394,8 @@ class Gbobject(Node):
         nbh['member_of']=member_of_dict
         #get Relations
         relns={}
+        rellft={}
+        relrgt={}
         if self.get_relations1:
             NTrelns=self.get_relations1
             for key,value in NTrelns.items():
