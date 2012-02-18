@@ -1,0 +1,27 @@
+{% extends "gstudio/base.html" %}
+{% load i18n %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+      <h2>Welcome {% firstof user.first_name user.username %}</h2>
+      <h3>Add</h3>
+      <a href="{{get_absoulute_url}}/gstudio/add/metatype">{% trans 'Metatype' %}</a><br>
+      <a href="{{get_absoulute_url}}/gstudio/add/objecttype">{% trans 'Object type' %}</a><br>
+      <a href="{{get_absoulute_url}}/gstudio/add/relationtype">{% trans 'Relation type' %}</a><br>
+      <a href="{{get_absoulute_url}}/gstudio/add/attributetype">{% trans 'Attribute Type' %}</a><br>
+      <a href="{{get_absoulute_url}}/gstudio/add/systemtype">{% trans 'System Type' %}</a><br>
+      <a href="{{get_absoulute_url}}/gstudio/add/processtype">{% trans 'Process Type' %}</a><br>
+      <a href="{{get_absoulute_url}}/gstudio/add/attribute">{% trans 'Attribute' %}</a><br>
+
+
+    {% else %}
+    <h2>Sorry either you are not logged in or dont have permission to view this content</h2>
+    <a href="{{get_absoulute_url}}/accounts/login">{% trans 'Login' %}</a><br>
+    <a href="{{get_absoulute_url}}/accounts/register">{% trans 'Register' %}</a><br>
+    {% endif %}
+    
+	  
+	  
+
+    
+{% endblock %}

@@ -9,7 +9,14 @@
       grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}
     | <a href="/">Home</a>  
     | <a href="{{ get_absolute_url }}/objects">objects</a>
-    | <a href="{{  get_absolute_url }}/admin">dashboard</a>
+    {% if user.is_authenticated %}
+       {% if user.is_staff%}  
+        | <a href="{{  get_absolute_url }}/admin">Admin Dashboard</a>
+        {% else %}
+        | <a href="{{  get_absolute_url }}/gstudio/userdashboard">My Dashboard</a>
+       {% endif %}
+    {% endif %}
+    
 
     </div> 
 
@@ -28,12 +35,7 @@
                     {% endif %}
                     {% trans 'Change password' %}</a></li>
                     <!-- Logout -->
-                    {% url admin:logout as logout_url %}
-                    {% if logout_url %}
-                        <li><a href="{{ logout_url }}">
-                    {% else %}
-                        <li><a href="{{ root_path }}logout/">
-                    {% endif %}
+		    <li><a href="{{get_absoulute_url}}/accounts/logout/">
                     {% trans 'Log out' %}</a></li>
 
                 </ul>
@@ -53,6 +55,15 @@
                 <li><a href="http://github.com/gnowgi/django-gstudio">Code</a></li>
             {% endblock %}
         </ul>
+    {% else %}
+        <ul id="user-tools">
+	  <li><a href="{{root_path}}/accounts/login">{% trans 'Login' %}</a></li>
+	  <li>Not registered ? <a href="{{root_path}}/accounts/register">{% trans 'Register' %}</a></li>
+	    </ul>
+	 
+	  
+	  
+	    
     {% endif %}
     {% block nav-global %}
     {% endblock %}

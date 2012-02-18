@@ -16,6 +16,7 @@ urlpatterns = patterns(
     url(r'^add/', include('gstudio.urls.add')),
     url(r'^ajax/', include('gstudio.urls.ajaxurls')),
     url(r'^graphs/', include('gstudio.urls.graphs')),
+    url(r'^userdashboard/', include('gstudio.urls.dashboard')),
     url(r'^', include('gstudio.urls.quick_nodetype')),
     url(r'^', include('gstudio.urls.capabilities')),
     url(r'^', include('gstudio.urls.nodetypes')),
