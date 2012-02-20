@@ -126,6 +126,70 @@ def addattribute(request):
         variables = RequestContext(request,{'formset':formset})
         return render_to_response(template, variables)
 
+def addrelation(request):
+        if request.method == 'POST':
+            formset = RelationForm(request.POST)
+            if formset.is_valid():
+                formset.save()
+                return HttpResponseRedirect("/gstudio/")
+            
+                    
+        else:
+
+            formset = RelationForm()
+
+        template = "gstudioforms/gstudiorelationform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
+
+def addcomplement(request):
+        if request.method == 'POST':
+            formset = ComplementForm(request.POST)
+            if formset.is_valid():
+                formset.save()
+                return HttpResponseRedirect("/gstudio/")
+            
+                    
+        else:
+
+            formset = ComplementForm()
+
+        template = "gstudioforms/gstudiocomplementform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
+
+def addunion(request):
+        if request.method == 'POST':
+            formset = UnionForm(request.POST)
+            if formset.is_valid():
+                formset.save()
+                return HttpResponseRedirect("/gstudio/")
+            
+                    
+        else:
+
+            formset = UnionForm()
+
+        template = "gstudioforms/gstudiounionform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
+
+def addintersection(request):
+        if request.method == 'POST':
+            formset = IntersectionForm(request.POST)
+            if formset.is_valid():
+                formset.save()
+                return HttpResponseRedirect("/gstudio/")
+            
+                    
+        else:
+
+            formset = IntersectionForm()
+
+        template = "gstudioforms/gstudiointersectionform.html"
+        variables = RequestContext(request,{'formset':formset})
+        return render_to_response(template, variables)
+
 
 
 
