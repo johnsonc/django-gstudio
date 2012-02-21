@@ -48,8 +48,26 @@ class ProcesstypeForm(ModelForm):
          fields =('title','altnames','content','parent','slug','status','changing_attributetype_set','changing_relationtype_set',
 		 'prior_nodes','posterior_nodes','sites')
 
+
+class RelationForm(ModelForm):
+    class Meta:
+        model = Relation
+
 class AttributeForm(ModelForm):
     class Meta:
         model = Attribute
+
+
+class ComplementForm(ModelForm):
+    class Meta:
+        model = Complement
+
+class UnionForm(ModelForm):
+    class Meta:
+        model = Union
+
+class IntersectionForm(ModelForm):
+    class Meta:
+        model = Intersection
 
 

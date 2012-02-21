@@ -13,6 +13,7 @@ urlpatterns = patterns(
     url(r'^sitemap/', include('objectapp.urls.sitemap')),
     url(r'^trackback/', include('objectapp.urls.trackback')),
     url(r'^discussions/', include('objectapp.urls.discussions')),
+    url(r'^add/', include('objectapp.urls.add')),
     url(r'^', include('objectapp.urls.quick_gbobject')),
     url(r'^', include('objectapp.urls.capabilities')),
     url(r'^', include('objectapp.urls.gbobjects')),
