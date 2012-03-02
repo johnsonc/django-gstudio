@@ -279,49 +279,39 @@ class Gbobject(Node):
     
     def get_graph_json(self):
 
-        nbh = self.get_nbh
-        
-        g_json = {}
-        
+        predicate_id={"plural":"a1","altnames":"a2","member_of":"a3"}
+	g_json = {}
+	g_json["node_metadata"]= [] 
+	
+	
+	nbh = self.get_nbh
+	
         this_node = {"_id":str(self.id),"title":self.title,"screen_name":self.title, "url":self.get_absolute_url()}
-        
-        g_json["node_metadata"]= [] 
-        g_json["is_mentioned_by"]= [] 
-        for key in nbh.keys():
-            # check if the value is not null or empty 
-            if nbh[key]:
-                # if not a string  (is list)
-                if not isinstance(nbh[key],basestring):
-                    # create a dict key for the relation
-                    g_json[str(key)]=[] 
-                    #iterate thru each element in list
-                    for item in nbh[key]:
-                        try:
-                            if item.__dict__.has_key("title"):
-                                # add node
-                                g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
-                                # add edge
-                                g_json[str(key)].append({"from":self.id , "to":item.id ,"value":1  })
-                                g_json["is_mentioned_by"].append({"from":self.id , "to":item.id ,"value":1  })
-                            elif item.__dict__.has_key("username"):
-                                # add node
-                                #g_json["node_metadata"].append({"_id":str(item.id),"title":item.username, "url":item.get_absolute_url()})
-                                # add edge
-                                #g_json[str(key)].append({"from":self.id, "to":item.id, "value":1 })
-                                pass
-                        except:
-                            pass
-                # is a string, then add as an attribute
-                else:
-                    # add attribute to node itself
-                    this_node[str(key)]=nbh[key]
-
-        #end for              
-        # add main node            
-        g_json["node_metadata"].append(this_node)
-        
-        return json.dumps(g_json)  
-
+	for key in predicate_id.keys():
+		if nbh[key]:
+			try:
+				g_json[str(key)]=[]      
+				g_json["node_metadata"].append({"_id":str(predicate_id[key]),"screen_name":key})
+				g_json[str(key)].append({"from":self.id , "to":predicate_id[key],"value":1  })
+				if not isinstance(nbh[key],basestring):
+					for item in nbh[key]:
+				
+						g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
+						g_json[str(key)].append({"from":predicate_id[key] , "to":item.id ,"value":1  })
+			
+				else:
+					value={nbh["plural"]:"a4",nbh["altnames"]:"a5"}			
+		            		this_node[str(key)]=nbh[key]
+				
+					for item in value.keys():
+						g_json["node_metadata"].append({"_id":str(value[nbh[key]]),"screen_name":nbh[key]})
+						g_json[str(key)].append({"from":predicate_id[key] , "to":value[nbh[key]] ,"value":1  })
+				
+			
+			except:
+		                    pass
+	g_json["node_metadata"].append(this_node)      
+        return json.dumps(g_json)   
 
 
     @property

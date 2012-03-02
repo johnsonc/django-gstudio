@@ -1,5 +1,6 @@
 from gstudio.models import *
 from django.forms import ModelForm
+from django.contrib.admin import widgets  
 
 class MetatypeForm(ModelForm):
 
@@ -7,12 +8,10 @@ class MetatypeForm(ModelForm):
         model = Metatype
 
 class ObjecttypeForm(ModelForm):                 
-    def clean(self):
-        CleanedData = self.cleaned_data
-        title = CleanedData.get('title')
-        if title == "":
-            raise forms.ValidationError("Title should no ")
-        return CleanedData
+
+
+
+
 
 
     class Meta:
@@ -54,6 +53,11 @@ class RelationForm(ModelForm):
         model = Relation
 
 class AttributeForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AttributeForm, self).__init__(*args, **kwargs)
+        self.fields['last_update'].widget = widgets.AdminSplitDateTime()
+        self.fields['creation_date'].widget = widgets.AdminSplitDateTime()
+
     class Meta:
         model = Attribute
 
