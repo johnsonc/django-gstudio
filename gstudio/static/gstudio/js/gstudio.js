@@ -67,4 +67,22 @@ $ = django.jQuery
 
 	   
 	       });
+	$(function() {
+		$( "#id_creation_date_0" ).datepicker();
+	});
+
+	$(function() {
+		$( "#id_creation_date_1" ).timepicker();
+	});
+
+	$(function() {
+		$( "#id_last_update_0" ).datepicker();
+	});
+
+	$(function() {
+		$( "#id_last_update_1" ).timepicker();
+	});
+
+
+
  });
