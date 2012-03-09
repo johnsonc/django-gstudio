@@ -92,11 +92,53 @@ div.paginator
   +paginator($link_color, $box_color)
 
 // Gbobject
-.hgbobject
-  +gbobject
-  .gbobject-header
+// .hgbobject
+// +gbobject
+// .gbobject-header
+//   background-color: $box_color
+//  .gbobject-content
+//   p
+//      font-size: 1.2em
+	//     pre, blockquote
+	//       overflow: auto
+	//       padding: 1em
+	//       clear: none
+	//       float: none
+	//       margin: 0 0 1.5em 0
+	//       width: auto
+	//     blockquote
+	//       margin: 0 2em 1.5em 2em
+	//       border: 1px dashed $box_font_color
+	//       background-color: $box_color + #111
+	//       p
+	//         font-size: 1.5em
+	//         margin: 0
+	//     pre
+	//       line-height: 110%
+	//       background-color: $box_color + #002
+	//       border-top: 1px solid $box_font_color
+	//       border-bottom: 1px solid $box_font_color
+
+	//   .gbobject-footer
+	//     p
+	//       strong
+	//         color: $box_font_color
+
+	// .gbobject-widgets
+	//   ul, ol
+	//     padding-left: 2.5em
+	//     list-style-image: url(../img/bullet.png)
+
+	// .featured
+	//   .gbobject-header
+	//     background-color: #C4D9C4
+	
+//Nodetype
+.hnodetype
+  +ndoetype
+  .nodetype-header
     background-color: $box_color
-  .gbobject-content
+  .nodetype-content
     p
       font-size: 1.2em
     pre, blockquote
@@ -106,30 +148,26 @@ div.paginator
       float: none
       margin: 0 0 1.5em 0
       width: auto
-
     blockquote
       margin: 0 2em 1.5em 2em
       border: 1px dashed $box_font_color
       background-color: $box_color + #111
-      p
-        font-size: 1.5em
-        margin: 0
+    p
+      font-size: 1.5em
+      margin: 0
     pre
       line-height: 110%
       background-color: $box_color + #002
       border-top: 1px solid $box_font_color
       border-bottom: 1px solid $box_font_color
-
   .gbobject-footer
     p
       strong
         color: $box_font_color
-
 .gbobject-widgets
   ul, ol
     padding-left: 2.5em
     list-style-image: url(../img/bullet.png)
-
 .featured
   .gbobject-header
     background-color: #C4D9C4

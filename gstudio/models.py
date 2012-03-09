@@ -41,6 +41,7 @@ from django.core import serializers
 
 NODETYPE_CHOICES = (
     ('ND', 'Nodes'),
+    ( 'OB' ,'Objects'),
     ('ED', 'Edges'),
     ('NT', 'Node types'),
     ('ET', 'Edge types'),
@@ -128,6 +129,8 @@ class NID(models.Model):
     the network, including edges.  Edges are also first class citizens
     in the gnowledge base. """
 
+    title = models.CharField(_('title'), help_text=_('give a name to the node'), max_length=255)
+    last_update = models.DateTimeField(_('last update'), default=datetime.now)
     creation_date = models.DateTimeField(_('creation date'),
                                          default=datetime.now)
     
@@ -135,8 +138,6 @@ class NID(models.Model):
                             unique_for_date='creation_date',
                             max_length=255)
 
-    title = models.CharField(_('title'), help_text=_('give a name to the node'), max_length=255)
-    last_update = models.DateTimeField(_('last update'), default=datetime.now)
 
     def get_serialized_dict(self):
         """
@@ -221,7 +222,7 @@ class Edge(NID):
     class Meta:
         abstract=False
 
-
+ 
 class Metatype(Node):
     """
     Metatype object for Nodetype
@@ -247,6 +248,7 @@ class Metatype(Node):
         nbh['title'] = self.title
         nbh['altnames'] = self.altnames 
         nbh['plural'] = self.plural
+	
         if self.parent:
             nbh['typeof'] = self.parent
         # generate ids and names of children/members
@@ -353,6 +355,7 @@ class Metatype(Node):
         nbh['title'] = self.title
         nbh['altnames'] = self.altnames
         nbh['plural'] = self.plural
+	
         if self.parent:
             nbh['typeof'] = self.parent
         # generate ids and names of children
@@ -364,6 +367,7 @@ class Metatype(Node):
         nbh['left_subjecttype_of'] = Relationtype.objects.filter(left_subjecttype=self.id)
         nbh['right_subjecttype_of'] = Relationtype.objects.filter(right_subjecttype=self.id)
         nbh['attributetypes'] = Attributetype.objects.filter(subjecttype=self.id)
+	
 
         return nbh
 
@@ -597,46 +601,39 @@ class Nodetype(Node):
 
     def get_graph_json(self):
 
-        nbh = self.get_nbh
-        
-        g_json = {}
-        
+        predicate_id={"plural":"a1","altnames":"a2","contains_members":"a3","contains_subtypes":"a4"}
+	g_json = {}
+	g_json["node_metadata"]= [] 
+	
+	
+	nbh = self.get_nbh
+	
         this_node = {"_id":str(self.id),"title":self.title,"screen_name":self.title, "url":self.get_absolute_url()}
-        
-        g_json["node_metadata"]= [] 
-        
-        for key in nbh.keys():
-            # check if the value is not null or empty 
-            if nbh[key]:
-                # if not a string  (is list)
-                if not isinstance(nbh[key],basestring):
-                    # create a dict key for the relation
-                    g_json[str(key)]=[] 
-                    #iterate thru each element in list
-                    for item in nbh[key]:
-                        try:
-                            if item.__dict__.has_key("title"):
-                                # add node
-                                g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
-                                # add edge
-                                g_json[str(key)].append({"from":self.id , "to":item.id ,"value":1  })
-                            elif item.__dict__.has_key("username"):
-                                # add node
-                                #g_json["node_metadata"].append({"_id":str(item.id),"title":item.username, "url":item.get_absolute_url()})
-                                # add edge
-                                #g_json[str(key)].append({"from":self.id, "to":item.id, "value":1 })
-                                pass
-                        except:
-                            pass
-                # is a string, then add as an attribute
-                else:
-                    # add attribute to node itself
-                    this_node[str(key)]=nbh[key]
-        #end for              
-        # add main node            
-        g_json["node_metadata"].append(this_node)
-        
-        return json.dumps(g_json)  
+	for key in predicate_id.keys():
+		if nbh[key]:
+			try:
+				g_json[str(key)]=[]      
+				g_json["node_metadata"].append({"_id":str(predicate_id[key]),"screen_name":key})
+				g_json[str(key)].append({"from":self.id , "to":predicate_id[key],"value":1  })
+				if not isinstance(nbh[key],basestring):
+					for item in nbh[key]:
+				
+						g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
+						g_json[str(key)].append({"from":predicate_id[key] , "to":item.id ,"value":1  })
+			
+				else:
+					value={nbh["plural"]:"a4",nbh["altnames"]:"a5"}			
+		            		this_node[str(key)]=nbh[key]
+				
+					for item in value.keys():
+						g_json["node_metadata"].append({"_id":str(value[nbh[key]]),"screen_name":nbh[key]})
+						g_json[str(key)].append({"from":predicate_id[key] , "to":value[nbh[key]] ,"value":1  })
+				
+			
+			except:
+		                    pass
+	g_json["node_metadata"].append(this_node)      
+        return json.dumps(g_json)   
 
 
     @property
@@ -900,45 +897,9 @@ class Objecttype(Nodetype):
     def __unicode__(self):
         return self.title
 
-    # def get_graph_json(self):
-
-    #     import networkx as nx
-    #     import d3
-    #     import json
-
-    #     nbh = self.get_nbh
-        
-    #     G = nx.DiGraph()
-        
-    #     G.add_node(self.title, uri=self.get_absolute_url())
-        
-    #     
-    #     
-    #     
-
-    #     for key in nbh.keys():
-    #         # check if its not null or empty 
-    #         if nbh[key]:
-    #             # check if not a string(is list)
-    #             if not isinstance(nbh[key],basestring):                
-    #                 for item in nbh[key]:
-                        
-    #                     try:
-    #                         if item.__dict__.has_key('title'):
-    #     
-    #                           G.add_node(item.title, uri=item.get_absolute_url())
-    #                           G.add_edge(self.title, item.title,name=key)
-    #                         elif item.__dict__.has_key('username'):
-    #                            G.add_node(item.username, uri=item.get_absolute_url())
-    #                            G.add_edge(self.title, item.username,name=key)
-    #                     except:
-    #                         pass
-    #             # is a string
-    #             else: 
-    #                 G.node[self.title][str(key)]=nbh[key]
-                               
-    #     return G #d3.json_graph.node_link_data(G) 
-
+    #def get_graph_json(self):
+	
+	
 
                     
     @property
@@ -1008,8 +969,8 @@ class Objecttype(Nodetype):
         get members of the object type
         """
         members = []
-        if self.gbobjects.all():
-            for gbobject in self.gbobjects.all():   
+        if self.member_objects.all():
+            for gbobject in self.member_objects.all():   
 		members.append(gbobject)
         return members    
 
@@ -1209,6 +1170,8 @@ class Relation(Edge):
         
         if choice == 'ED':
             nodeslist = Edge.objects.all()
+	if choice == 'OB':
+            nodeslist = Objects.objects.all()
         if choice == 'ND':
             nodeslist = Node.objects.all()
         if choice == 'NT':
@@ -1635,6 +1598,34 @@ class NodeSpecification(Node):
                        ('can_change_author', 'Can change author'), )
 
 
+class Expression(Node):
+    """
+    Expression constructor
+    """
+
+    left_term = models.ForeignKey(NID, related_name="left_term_of", verbose_name='left term name') 
+    relationtype = models.ForeignKey(Relationtype, verbose_name='relation name')
+    right_term = models.ForeignKey(NID, related_name="right_term_of", verbose_name='right term name') 
+
+
+    def __unicode__(self):
+        return self.composed_sentence
+
+    @property
+    def composed_sentence(self):
+        "composes the relation as a sentence in a triple format."
+        return '%s %s %s' % (self.left_term, self.relationtype, self.right_term)
+
+
+    class Meta:
+        unique_together = (('left_term','relationtype','right_term'),)
+        verbose_name = _('expression')
+        verbose_name_plural = _('expressionss')
+        permissions = (('can_view_all', 'Can view all'),
+                       ('can_change_author', 'Can change author'), )
+
+
+
 class Union(Node):
     """
     union of two classes
@@ -1643,6 +1634,8 @@ class Union(Node):
         
     def __unicode__(self):
         return self.title
+
+
 
 class Complement(Node):
     """

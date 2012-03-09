@@ -279,49 +279,39 @@ class Gbobject(Node):
     
     def get_graph_json(self):
 
-        nbh = self.get_nbh
-        
-        g_json = {}
-        
+        predicate_id={"plural":"a1","altnames":"a2","member_of":"a3"}
+	g_json = {}
+	g_json["node_metadata"]= [] 
+	
+	
+	nbh = self.get_nbh
+	
         this_node = {"_id":str(self.id),"title":self.title,"screen_name":self.title, "url":self.get_absolute_url()}
-        
-        g_json["node_metadata"]= [] 
-        g_json["is_mentioned_by"]= [] 
-        for key in nbh.keys():
-            # check if the value is not null or empty 
-            if nbh[key]:
-                # if not a string  (is list)
-                if not isinstance(nbh[key],basestring):
-                    # create a dict key for the relation
-                    g_json[str(key)]=[] 
-                    #iterate thru each element in list
-                    for item in nbh[key]:
-                        try:
-                            if item.__dict__.has_key("title"):
-                                # add node
-                                g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
-                                # add edge
-                                g_json[str(key)].append({"from":self.id , "to":item.id ,"value":1  })
-                                g_json["is_mentioned_by"].append({"from":self.id , "to":item.id ,"value":1  })
-                            elif item.__dict__.has_key("username"):
-                                # add node
-                                #g_json["node_metadata"].append({"_id":str(item.id),"title":item.username, "url":item.get_absolute_url()})
-                                # add edge
-                                #g_json[str(key)].append({"from":self.id, "to":item.id, "value":1 })
-                                pass
-                        except:
-                            pass
-                # is a string, then add as an attribute
-                else:
-                    # add attribute to node itself
-                    this_node[str(key)]=nbh[key]
-
-        #end for              
-        # add main node            
-        g_json["node_metadata"].append(this_node)
-        
-        return json.dumps(g_json)  
-
+	for key in predicate_id.keys():
+		if nbh[key]:
+			try:
+				g_json[str(key)]=[]      
+				g_json["node_metadata"].append({"_id":str(predicate_id[key]),"screen_name":key})
+				g_json[str(key)].append({"from":self.id , "to":predicate_id[key],"value":1  })
+				if not isinstance(nbh[key],basestring):
+					for item in nbh[key]:
+				
+						g_json["node_metadata"].append({"_id":str(item.id),"screen_name":item.title, "title":item.title, "url":item.get_absolute_url()})
+						g_json[str(key)].append({"from":predicate_id[key] , "to":item.id ,"value":1  })
+			
+				else:
+					value={nbh["plural"]:"a4",nbh["altnames"]:"a5"}			
+		            		this_node[str(key)]=nbh[key]
+				
+					for item in value.keys():
+						g_json["node_metadata"].append({"_id":str(value[nbh[key]]),"screen_name":nbh[key]})
+						g_json[str(key)].append({"from":predicate_id[key] , "to":value[nbh[key]] ,"value":1  })
+				
+			
+			except:
+		                    pass
+	g_json["node_metadata"].append(this_node)      
+        return json.dumps(g_json)   
 
 
     @property
@@ -330,20 +320,51 @@ class Gbobject(Node):
         Returns all the relations of the nodetype
         """
         relations={}
-        
+        reltype={}
         left_relations=Relation.objects.filter(left_subject=self.id)
-        if left_relations:    
-            for each in left_relations:
-                relation=each.relationtype.title
-                predicate=each.right_subject
-                relations[relation]=predicate
+        if left_relations:
+           for each in left_relations:
+           	relation=each.relationtype.title
+           	predicate=each.right_subject
+           	predicate_values=[]
+                if reltype:
+              	   for key,value in reltype.items():
+                       predicate_values=value
+                       if each.relationtype.title==key:
+                          predicate_values.append(predicate)
+                          reltype[key]=predicate_values
+                          break
+                       else:
+                          predicate_values=predicate
+                          reltype[relation]=predicate_values
+                          break
+                else:
+                    predicate_values.append(predicate)
+                    reltype[relation]=predicate_values
+                relations['lrelations']=reltype
         
         right_relations=Relation.objects.filter(right_subject=self.id)
-        if right_relations:    
-            for each in right_relations:
-                relation=each.relationtype.inverse
-                predicate=each.left_subject
-                relations[relation]=predicate
+        reltype={}
+        if right_relations:
+           for each in right_relations:
+           	relation=each.relationtype.inverse
+           	predicate=each.left_subject
+                predicate_values=[]
+                if reltype:
+              	   for key,value in reltype.items():
+                       predicate_values=value
+                       if each.relationtype.inverse==key:
+                          predicate_values.append(predicate)
+                          reltype[key]=predicate_values
+                          break
+                       else:
+                          predicate_values=predicate
+                          reltype[relation]=predicate_values
+                          break
+                else:
+                   predicate_values.append(predicate)
+                   reltype[relation]=predicate_values
+                relations['rrelations']=reltype
         return relations
     @property
     def get_rendered_nbh(self):
@@ -363,13 +384,39 @@ class Gbobject(Node):
         nbh['member_of']=member_of_dict
         #get Relations
         relns={}
-        relnvalue={}
+        rellft={}
+        relrgt={}
         if self.get_relations1:
             NTrelns=self.get_relations1
-            for value in NTrelns:
-                relnvalue[NTrelns[value].title]=NTrelns[value].ref.get_absolute_url()
-                relns[value]=relnvalue
-        nbh['relations']=relns
+            for key,value in NTrelns.items():
+                if key=="rrelations":
+                    relrgt={}
+                    for rgtkey,rgtvalue in value.items():
+                        relnvalue={}
+                        if isinstance(rgtvalue,list):
+                            for items in rgtvalue:
+                                relnvalue[items]=items.get_absolute_url()
+                        else:
+                            relnvalue[rgtvalue]=rgtvalue.get_absolute_url()
+                        
+                        relrgt[rgtkey]=relnvalue
+                    
+                else:
+                    rellft={}
+                    relns['left']=rellft
+                    for lftkey,lftvalue in value.items():
+                        relnvalue={}
+                        if isinstance(lftvalue,list):
+                             for items in lftvalue:
+                                 relnvalue[items]=items.get_absolute_url()
+                        else:
+                             relnvalue[lftvalue]=lftvalue.get_absolute_url()
+                        
+                        rellft[lftkey]=relnvalue
+                    
+        nbh['relations']=relrgt
+        nbh['relations'].update(rellft)
+   
         #get Attributes
         attributes ={}
         for each in self.subject_of.all():

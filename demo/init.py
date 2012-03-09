@@ -4,7 +4,6 @@ from reversion.models import *
 
 mts = Metatype.objects.all()
 ots = Objecttype.objects.all()
-mt = Metatype.objects.get(title='concept class')
 ot = Objecttype.objects.get(title='person')
 ot2 = Objecttype.objects.get(title='city')
 ot3 = Objecttype.objects.get(title='country')

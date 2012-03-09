@@ -26,58 +26,64 @@
       <a href="{{ Objecttype.get_absolute_url }}" title="{{ Objecttype }}" rel="tag Objecttype">{{ Objecttype }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}.
     </p>
 
+</div>
 
+</div>
+<p>
              <b>Name: </b> {{ object.title }} <br/>
 
-	     {% if object.get_rendered_nbh.plural %}
+               {% if object.get_rendered_nbh.plural %}
                                 <b> Plural Name :<nbsp></b>
                                          {{object.get_rendered_nbh.plural}} <br/>
                            {% endif %}
                             {% if object.get_rendered_nbh.altnames %}
                                <b> Alternate names :<nbsp></b>
                                          {{object.get_rendered_nbh.altnames}} <br/>
-		           {% endif %}
+{% endif %}
               
               {% if object.get_rendered_nbh.member_of %}
                            
                           
-                                <b> Member of Objecttypes :<nbsp></b>
+                                <b> Member of Metatypes :<nbsp></b>
 
                                     {% for mkey,mvalue in object.get_rendered_nbh.member_of.items %}
                                         <a href="{{mvalue}}">{{mkey}}</a>;
                                     {% endfor %}<br/>
-                           {% endif %}  
+                           {% endif %}
 
               {% if object.get_rendered_nbh.relations %}
                          
                          
                                  {% for relkey,relvalue in object.get_rendered_nbh.relations.items %}
                                           <b>{{relkey}}:<nbsp></b>
-					{% for relk, relv in relvalue.items %}
-					    <a href="{{relv}}">{{relk}}</a>;	      
+{% for relk, relv in relvalue.items %}
+<a href="{{relv}}">{{relk}}</a>;
                                         {% endfor %}<br/>
-				 {% endfor %}      
-	                   {% endif %}
+{% endfor %}
+{% endif %}
                            
                            {% if object.get_rendered_nbh.attributes %}
-                                                                                  				   
+                         
+                           
                                 
-				    {% for atkey,atvalue in object.get_rendered_nbh.attributes.items %}
-                                        <b>{{atkey}} : <nbsp></b>{{atvalue}};<br/>	      
-				    {% endfor %}    
-	                   {% endif %}
+<b>Attributes: <nbsp> </b>
+                                
+{% for items in object.get_rendered_nbh.attributes %}
+                                        {{items}};
+{% endfor %} <br/>
+{% endif %}
 
-
-	 
+</p>
 
 
   
+
   <div class="gbobject-body span-16 last">
     {% if object.image %}
     <div class="gbobject-image">
       <p>
         <a href="{{ object.get_absolute_url }}" rel="bookmark">
-	  <img src="{{ object.image.url }}" alt="{{ object.title }}" class="left" />
+<img src="{{ object.image.url }}" alt="{{ object.title }}" class="left" />
         </a>
       </p>
     </div>
@@ -86,7 +92,6 @@
       {{ object_content }}
     </div>
   </div>
-
 
   <div class="gbobject-footer">
     <p class="gbobject-tags span-16 last">
@@ -127,19 +132,17 @@
       {% endwith %}
       {% with object.pingbacks.count as pingback_count %}
       {% if pingback_count %}
-      , <a href="{{ object.get_absolute_url }}#pingbacks" title="{{ object.title }}">
+       <a href="{{ object.get_absolute_url }}#pingbacks" title="{{ object.title }}">
         {% blocktrans count pingback_count as pingback_count %}{{ pingback_count }} pingback{% plural %}{{ pingback_count }} pingbacks{% endblocktrans %}
       </a>
       {% endif %}
       {% endwith %}
       {% with object.trackbacks.count as trackback_count %}
       {% if trackback_count %}
-      , <a href="{{ object.get_absolute_url }}#trackbacks" title="{{ object.title }}">
+       <a href="{{ object.get_absolute_url }}#trackbacks" title="{{ object.title }}">
         {% blocktrans count trackback_count as trackback_count %}{{ trackback_count }} trackback{% plural %}{{ trackback_count }} trackbacks{% endblocktrans %}
       </a>
       {% endif %}
       {% endwith %}
     </p>
   </div>
-</div>
-</div>
