@@ -1004,7 +1004,7 @@ class Objecttype(Nodetype):
 	return nbh
     
     @property
-    def get_rendered_nbh(self):
+    def get_rendered_nbh1(self):
         """
         Returns the neighbourhood of the nodetype with the hyperlinks of nodes rendered
         """
