@@ -328,16 +328,21 @@ class Gbobject(Node):
            	predicate=each.right_subject
            	predicate_values=[]
                 if reltype:
+              	   fl=0
               	   for key,value in reltype.items():
-                       predicate_values=value
-                       if each.relationtype.title==key:
-                          predicate_values.append(predicate)
-                          reltype[key]=predicate_values
-                          break
+                       if type(value) <> list:
+                          t=[]
+                          t.append(value)
+                          predicate_values=t
                        else:
-                          predicate_values=predicate
-                          reltype[relation]=predicate_values
-                          break
+                          predicate_values=value
+                       if each.relationtype.title==key:
+                          fl=1
+                          predicate_values.append(predicate)
+                          reltype[key]=predicate_values             
+                   if fl==0:
+                       predicate_values=predicate
+                       reltype[relation]=predicate_values
                 else:
                     predicate_values.append(predicate)
                     reltype[relation]=predicate_values
@@ -351,16 +356,23 @@ class Gbobject(Node):
            	predicate=each.left_subject
                 predicate_values=[]
                 if reltype:
+                   fl=0
               	   for key,value in reltype.items():
-                       predicate_values=value
+                       if type(value) <> list:
+                          t=[]
+                          t.append(value)
+                          prdicate_values=t
+                       else:
+                          predicate_values=value
                        if each.relationtype.inverse==key:
+                          fl=1
                           predicate_values.append(predicate)
                           reltype[key]=predicate_values
-                          break
-                       else:
-                          predicate_values=predicate
-                          reltype[relation]=predicate_values
-                          break
+                          
+                   if fl==0:
+                       predicate_values=predicate
+                       reltype[relation]=predicate_values
+                          
                 else:
                    predicate_values.append(predicate)
                    reltype[relation]=predicate_values
