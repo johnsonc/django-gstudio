@@ -396,8 +396,7 @@ $(function() {
                 } */ )
                 .attr("x1", function(d) {
                   return d.source.x;
-                })
-		
+                })		
                 .attr("y1", function(d) {
                   return d.source.y;
                 })
@@ -412,8 +411,7 @@ $(function() {
                 })
 
 	      .append("a")
-               .text(function(d) { return d.type; }); 
-	 
+               .text(function(d) { return d.type; }); 	       
 	     
           var node = d3.select("#chart g.nodes").selectAll("g.node").data(nodes);  
 
