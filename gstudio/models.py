@@ -145,9 +145,9 @@ class NID(models.Model):
         return the fields in a serialized form of the current object using the __dict__ function.
         """
         return self.__dict__
-
+    
     @models.permalink
-    def get_absolute_url(self):
+    def get_relative_url(self):
         """Return nodetype's URL"""
         
         return ('gstudio_nodetype_detail', (), {
@@ -155,6 +155,16 @@ class NID(models.Model):
             'month': self.creation_date.strftime('%m'),
             'day': self.creation_date.strftime('%d'),
             'slug': self.slug})
+
+    def get_absolute_url(self):
+        """Return nodetype's URL"""
+        s = Site.objects.get(id=1)        
+        str1 = "http://"
+        str2 = s.domain
+        str3 = self.get_relative_url()             
+        return  str1 + str2 + str(str3)
+
+
 
     @property
     def ref(self):
